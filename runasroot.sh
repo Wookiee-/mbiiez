@@ -1,8 +1,13 @@
 #!/bin/bash
 
-sudo useradd -m mbiiez
-sudo usermod -aG sudo mbiiez
-sudo usermod -s /bin/bash mbiiez
-sudo passwd mbiiez
+apt update
+apt install -y git
 
+useradd -m mbiiez
+usermod -aG sudo mbiiez
+usermod -s /bin/bash mbiiez
+passwd mbiiez
+
+echo ''
 echo 'You may now log into mbiiez via ssh'
+echo ''
