@@ -88,11 +88,6 @@ debian () {
 		rm MBII.zip
 		cd $MBIIPATH
 	
-		chmod +x $OPENJKPATH/mbiided.i386
-       	unzip -o MBII.zip -d $OPENJKPATH
-		rm MBII.zip
-		cd $MBIIPATH
-
 		mv -f jampgamei386.so jampgamei386.jamp.so
 		cp jampgamei386.nopp.so jampgamei386.so
 
@@ -226,11 +221,6 @@ ubuntu () {
 		rm MBII.zip
 		cd $MBIIPATH
 	
-		chmod +x $OPENJKPATH/mbiided.i386
-       	unzip -o MBII.zip -d $OPENJKPATH
-		rm MBII.zip
-		cd $MBIIPATH
-
 		mv -f jampgamei386.so jampgamei386.jamp.so
 		cp jampgamei386.nopp.so jampgamei386.so
 
