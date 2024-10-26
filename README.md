@@ -1,15 +1,15 @@
 ## Latest News Update for Debian/Ubuntu 24.04/10
 
-A new installer to support both Debian and Ubuntu systems. You must run this under root.
+New changes to run this under user other than through root as a security risk. I've updated the installer also with the changes.
 
 ## Changelog 
 
 1. default.json.example and discord.json.example are there for examples
 2. Launching with mbii command with discord.json not filled out will load RTVRTM service twice
-3. The OpenJK binaries and engine will no longer be downloaded, mbiided.i386 is now the current default engine
-4. RTVRTM have been been fixed and now working due to secondary maps in default.json.example not found on server
-5. Added a Pre-CTF installer before 1.9 for those who don't want the CTF
-6. Dotnet 6 SDK updated from 3.11
+3. RTVRTM have been been fixed and now working due to secondary maps in default.json.example not found on server
+4. Pre-CTF installer before 1.9 for those who don't want the CTF -REMOVED-
+5. Dotnet 6 SDK updated from 3.11
+6. Pyenv is now used for python2 environment under the user so it doesn't break the system. 
 
 ## Movie Battles II EZ
 
