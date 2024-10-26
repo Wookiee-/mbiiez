@@ -1,6 +1,12 @@
 ## Latest News Update for Debian/Ubuntu 24.04/10
 
-New changes to run this under user other than through root as a security risk. I've updated the installer also with the changes.
+If you are under root user please run:- 
+
+- wget https://raw.githubusercontent.com/Wookiee-/mbiiez/refs/heads/main/runasroot.sh then chmod
+- chmod +x runasroot.sh
+- ./runasroot.sh
+
+New changes to run this under user other than through root user.
 
 ## Changelog 
 
