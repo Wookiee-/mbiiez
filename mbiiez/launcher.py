@@ -103,7 +103,7 @@ class launcher:
             exit()
             
         # Make sure can be executed    
-        # os.system("chmod +x {}/{}".format("/home/mbiiez/openjk/", self.config['server']['engine']))  
+        # os.system("chmod +x {}/{}".format("/usr/bin", self.config['server']['engine']))  
           
         # Sym Links
         if(os.path.exists("/home/mbiiez/.local/share/openjk")):
