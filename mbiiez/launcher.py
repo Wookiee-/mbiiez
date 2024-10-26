@@ -1,3 +1,4 @@
+
 import os
 import shutil
 import subprocess
@@ -102,18 +103,18 @@ class launcher:
             exit()
             
         # Make sure can be executed    
-        os.system("chmod +x {}/{}".format("/usr/bin", self.config['server']['engine']))  
+        # os.system("chmod +x {}/{}".format("/home/mbiiez/openjk/", self.config['server']['engine']))  
           
         # Sym Links
-        if(os.path.exists("/root/.local/share/openjk")):
-            if(not os.path.islink("/root/.local/share/openjk")):
-                shutil.rmtree("/root/.local/share/openjk")       
-                os.symlink(settings.locations.game_path, "/root/.local/share/openjk")
+        if(os.path.exists("/home/mbiiez/.local/share/openjk")):
+            if(not os.path.islink("/home/mbiiez/.local/share/openjk")):
+                shutil.rmtree("/home/mbiiez/.local/share/openjk")       
+                os.symlink(settings.locations.game_path, "/home/mbiiez/.local/share/openjk")
         
-        if(os.path.exists("/root/.ja")):
-            if(not os.path.islink("/root/.ja")):
-                shutil.rmtree("/root/.ja")       
-                os.symlink(settings.locations.game_path, "/root/.ja")  
+        if(os.path.exists("/home/mbiiez/.ja")):
+            if(not os.path.islink("/home/mbiiez/.ja")):
+                shutil.rmtree("/home/mbiiez/.ja")       
+                os.symlink(settings.locations.game_path, "/home/mbiiez/.ja")  
     
         self.process_handler.start(self.launch_dedicated_server_thread, self.name_dedicated, self.instance_name)
 

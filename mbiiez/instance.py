@@ -102,7 +102,7 @@ class instance:
 
         ''' RTV Service, Eventually move to a plugin ''' 
         if(self.config['server']['enable_rtv']):
-            cmd = "python /opt/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
+            cmd = "python2 /home/mbiiez/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
             self.process_handler.register_service("RTVRTM", cmd, 999, self.log_handler.log_await) 
             
     def events_internal(self):
@@ -335,18 +335,18 @@ class instance:
                 exit()
                 
             # Make sure can be executed    
-            os.system("chmod +x {}/{}".format("/usr/bin", self.config['server']['engine']))  
+            # os.system("chmod +x {}/{}".format("/home/mbiiez/openjk/", self.config['server']['engine']))  
               
             # Sym Links
-            if(os.path.exists("/root/.local/share/openjk")):
-                if(not os.path.islink("/root/.local/share/openjk")):
-                    shutil.rmtree("/root/.local/share/openjk")       
-                    os.symlink(settings.locations.game_path, "/root/.local/share/openjk")
+            if(os.path.exists("/home/mbiiez/.local/share/openjk")):
+                if(not os.path.islink("/home/mbiiez/.local/share/openjk")):
+                    shutil.rmtree("/home/mbiiez/.local/share/openjk")       
+                    os.symlink(settings.locations.game_path, "/home/mbiiez/.local/share/openjk")
             
-            if(os.path.exists("/root/.ja")):
-                if(not os.path.islink("/root/.ja")):
-                    shutil.rmtree("/root/.ja")       
-                    os.symlink(settings.locations.game_path, "/root/.ja")  
+            if(os.path.exists("$/home/mbiiez/.ja")):
+                if(not os.path.islink("/home/mbiiez/.ja")):
+                    shutil.rmtree("/home/mbiiez/.ja")       
+                    os.symlink(settings.locations.game_path, "/home/mbiiez/.ja")  
         
                            
             self.event_handler.run_event("before_launch_server")

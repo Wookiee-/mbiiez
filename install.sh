@@ -4,7 +4,7 @@
 #get script path here
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
-OPENJKPATH="/opt/openjk"
+OPENJKPATH="$HOME/openjk"
 MBIIPATH="$OPENJKPATH/MBII"
 MACHINE_TYPE=`uname -m`
 
@@ -21,10 +21,10 @@ debian () {
 	if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 		sudo dpkg --add-architecture i386
                 sudo apt-get update
-		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386
+		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4:i386
 	else
                 sudo apt-get update
-		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 
+		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4:i386 
 	fi
 		debian;
               ;;
@@ -52,10 +52,25 @@ debian () {
 		debian;
 		;;
           "Python2")
-		sed -i '$ a\\ndeb http://ftp.us.debian.org/debian bullseye main' /etc/apt/sources.list
 		sudo apt-get update
-		sudo apt-get install python2-dev
-                sudo apt-get install python-is-python2
+		sudo apt install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+	if [ ! -r ~/.pyenv/ ]
+			then
+    		git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+    		git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
+    		echo '
+	# pyenv
+		export PYENV_ROOT="$HOME/.pyenv"
+		export PATH="$PYENV_ROOT/bin:$PATH"
+	if command -v pyenv 1>/dev/null 2>&1; then
+    		eval "$(pyenv init -)"
+    		eval "$(pyenv virtualenv-init -)" # Enable auto-activation of virtualenvs
+	fi' >> ~/.bashrc
+    		source ~/.bashrc
+    		exec "$SHELL"
+	fi
+		pyenv install 2.7.18 -s -v
+		pyenv local 2.7.18
 		debian;
               ;;
           "MBII Server")
@@ -67,19 +82,14 @@ debian () {
         	sleep 2
 
         #Download file lists, get the latest
-        wget -O "$SCRIPTPATH/downloads" https://archive.moviebattles.org/releases/
-
-        while IFS= read -r line; do
-
-                SUB='FULL'
-                if [[ "$line" == *"$SUB"* ]]; then
-                  FILENAME=`echo "$line" | grep -io '<a href=['"'"'"][^"'"'"']*['"'"'"]' | sed -e 's/^<a href=["'"'"']//i' -e 's/["'"'"']$//i'`
-                  LINK="https://archive.moviebattles.org/releases/$FILENAME"
-                fi
-        done < downloads
-
-      		wget -O "$SCRIPTPATH/MBII.zip" $LINK
-       		unzip -o MBII.zip -d $OPENJKPATH
+		wget -O MBII.zip https://www.moddb.com/downloads/mirror/269567/130/322caa7bdb18fe3ed9645724f169b0c6/?referer=https%3A%2F%2Fwww.moddb.com%2Fmods%2Fmovie-battles-ii%2Fdownloads
+		
+       	unzip -o MBII.zip -d $OPENJKPATH
+		rm MBII.zip
+		cd $MBIIPATH
+	
+		chmod +x $OPENJKPATH/mbiided.i386
+       	unzip -o MBII.zip -d $OPENJKPATH
 		rm MBII.zip
 		cd $MBIIPATH
 
@@ -95,11 +105,10 @@ debian () {
 		mkdir -p $HOME/.local/share/openjk/
 		ln -s $HOME/openjk $HOME/.local/share/openjk/
 
-		# Copies Binaries so you can run mbiided.i386 as your engine
-		sudo cp $OPENJKPATH/mbiided.i386 /usr/bin/
+		# Copies Binaries so you can run openjk.i386 or mbiided.i386 as your engine
+		sudo cp $HOME/openjk/mbiided.i386 /usr/bin/
 
-		sudo chmod +x /usr/bin/mbiided.i386
-
+		sudo chmod 755 /usr/bin/mbiided.i386		
 	fi
                 debian;
               ;;
@@ -111,8 +120,9 @@ debian () {
                 debian
               ;;
           "Dotnet")
-		sudo cp 99microsoft-dotnet.pref /etc/apt/preferences.d/
+		sudo apt-get install software-properties-common
                 sudo apt-get update
+		sudo add-apt-repository ppa:dotnet/backports
                 sudo apt-get install -y apt-transport-https dotnet-sdk-6.0
                 debian;
               ;;
@@ -149,10 +159,10 @@ ubuntu () {
 	if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 		sudo dpkg --add-architecture i386
                 sudo apt-get update
-		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386
+		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4:i386
 	else
                 sudo apt-get update
-		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 
+		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4:i386 
 	fi
             ubuntu;
               ;;
@@ -166,24 +176,39 @@ ubuntu () {
 		sudo apt-get install -y nano
 		sudo apt-get install -y python3-pip
 		sudo apt-get install -y unzip
-		sudo pip3 install watchgod 
-		sudo pip3 install tailer 
-		sudo pip3 install six 
-		sudo pip3 install psutil 
-		sudo pip3 install PTable 
-		sudo pip3 install ConfigParser 
-		sudo pip3 install pysqlite3 
-		sudo pip3 install flask 
-		sudo pip3 install flask_httpauth 
-		sudo pip3 install discord.py 
-		sudo pip3 install prettytable 
+		sudo pip3 install watchgod --break-system-packages
+		sudo pip3 install tailer --break-system-packages
+		sudo pip3 install six --break-system-packages
+		sudo pip3 install psutil --break-system-packages
+		sudo pip3 install PTable --break-system-packages
+		sudo pip3 install ConfigParser --break-system-packages
+		sudo pip3 install pysqlite3 --break-system-packages
+		sudo pip3 install flask --break-system-packages
+		sudo pip3 install flask_httpauth --break-system-packages
+		sudo pip3 install discord.py --break-system-packages
+		sudo pip3 install prettytable --break-system-packages
             ubuntu;
               ;;
           "Python2")
-                sudo add-apt-repository ppa:deadsnakes/ppa
-                sudo apt-get update
-                sudo apt-get install python2-dev
-                sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+		sudo apt-get update
+		sudo apt install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+	if [ ! -r ~/.pyenv/ ]
+			then
+    		git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+    		git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
+    		echo '
+	# pyenv
+		export PYENV_ROOT="$HOME/.pyenv"
+		export PATH="$PYENV_ROOT/bin:$PATH"
+	if command -v pyenv 1>/dev/null 2>&1; then
+    		eval "$(pyenv init -)"
+    		eval "$(pyenv virtualenv-init -)" # Enable auto-activation of virtualenvs
+	fi' >> ~/.bashrc
+    		source ~/.bashrc
+    		exec "$SHELL"
+	fi
+		pyenv install 2.7.18 -s -v
+		pyenv local 2.7.18
             ubuntu;
 		;;
           "MBII Server")
@@ -195,19 +220,14 @@ ubuntu () {
         	sleep 2
 
         #Download file lists, get the latest
-        wget -O "$SCRIPTPATH/downloads" https://archive.moviebattles.org/releases/
-
-        while IFS= read -r line; do
-
-                SUB='FULL'
-                if [[ "$line" == *"$SUB"* ]]; then
-                  FILENAME=`echo "$line" | grep -io '<a href=['"'"'"][^"'"'"']*['"'"'"]' | sed -e 's/^<a href=["'"'"']//i' -e 's/["'"'"']$//i'`
-                  LINK="https://archive.moviebattles.org/releases/$FILENAME"
-                fi
-        done < downloads
-
-      		wget -O "$SCRIPTPATH/MBII.zip" $LINK
-       		unzip -o MBII.zip -d $OPENJKPATH
+		wget -O MBII.zip https://www.moddb.com/downloads/mirror/269567/130/322caa7bdb18fe3ed9645724f169b0c6/?referer=https%3A%2F%2Fwww.moddb.com%2Fmods%2Fmovie-battles-ii%2Fdownloads
+		
+       	unzip -o MBII.zip -d $OPENJKPATH
+		rm MBII.zip
+		cd $MBIIPATH
+	
+		chmod +x $OPENJKPATH/mbiided.i386
+       	unzip -o MBII.zip -d $OPENJKPATH
 		rm MBII.zip
 		cd $MBIIPATH
 
@@ -220,15 +240,15 @@ ubuntu () {
 		sudo ln -s $SCRIPTPATH/mbii.py /usr/bin/mbii
 		sudo chmod +x /usr/bin/mbii
 
-		mkdir -p $HOME/.local/share/openjk/
-		ln -s $HOME/openjk $HOME/.local/share/openjk/
+		mkdir -p $HOME/.local/share/
+		ln -s $HOME/openjk $HOME/.local/share/
 
-		# Copies Binaries so you can run mbiided.i386 as your engine
-		sudo cp $SCRIPTPATH/mbiided.i386 /usr/bin/
+		# Copies Binaries so you can run openjk.i386 or mbiided.i386 as your engine
+		sudo cp $HOME/openjk/mbiided.i386 /usr/bin/
 
-		sudo chmod +x /usr/bin/mbiided.i386
-
+		sudo chmod +755 /usr/bin/mbiided.i386			
 	fi
+		ubuntu;
               ;;
           "RTVRTM")
 		cd $SCRIPTPATH
@@ -238,8 +258,9 @@ ubuntu () {
             ubuntu;
               ;;
           "Dotnet")
-                sudo cp 99microsoft-dotnet.pref /etc/apt/preferences.d/
+		sudo apt-get install software-properties-common
                 sudo apt-get update
+		sudo add-apt-repository ppa:dotnet/backports
                 sudo apt-get install -y apt-transport-https dotnet-sdk-6.0
             ubuntu;
               ;;

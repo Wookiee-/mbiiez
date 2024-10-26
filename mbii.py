@@ -112,7 +112,7 @@ class main:
                 name = filename.replace(".json","")
                 i = instance(name)  
                 if(i.players_count() == 0):
-                    print(bcolors.CYAN + "Retarting " + name + bcolors.ENDC)   
+                    print(bcolors.CYAN + "Restarting " + name + bcolors.ENDC)   
                     print("------------------------------------") 
                     i.restart()
                 else:
