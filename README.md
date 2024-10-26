@@ -2,7 +2,7 @@
 
 If you are under root user please run:- 
 
-- wget https://raw.githubusercontent.com/Wookiee-/mbiiez/refs/heads/main/runasroot.sh then chmod
+- wget https://raw.githubusercontent.com/Wookiee-/mbiiez/refs/heads/main/runasroot.sh
 - chmod +x runasroot.sh
 - ./runasroot.sh
 
