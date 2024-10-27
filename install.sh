@@ -38,17 +38,17 @@ debian () {
 		sudo apt-get install -y nano
 		sudo apt-get install -y python3-pip
 		sudo apt-get install -y unzip
-		sudo pip3 install watchgod --break-system-packages
-		sudo pip3 install tailer --break-system-packages
-		sudo pip3 install six --break-system-packages
-		sudo pip3 install psutil --break-system-packages
-		sudo pip3 install PTable --break-system-packages
-		sudo pip3 install ConfigParser --break-system-packages
-		sudo pip3 install pysqlite3 --break-system-packages
-		sudo pip3 install flask --break-system-packages
-		sudo pip3 install flask_httpauth --break-system-packages
-		sudo pip3 install discord.py --break-system-packages
-		sudo pip3 install prettytable --break-system-packages
+		pip3 install watchgod --break-system-packages
+		pip3 install tailer --break-system-packages
+		pip3 install six --break-system-packages
+		pip3 install psutil --break-system-packages
+		pip3 install PTable --break-system-packages
+		pip3 install ConfigParser --break-system-packages
+		pip3 install pysqlite3 --break-system-packages
+		pip3 install flask --break-system-packages
+		pip3 install flask_httpauth --break-system-packages
+		pip3 install discord.py --break-system-packages
+		pip3 install prettytable --break-system-packages
 		debian;
 		;;
           "Python2")
@@ -174,17 +174,17 @@ ubuntu () {
 		sudo apt-get install -y nano
 		sudo apt-get install -y python3-pip
 		sudo apt-get install -y unzip
-		sudo pip3 install watchgod --break-system-packages
-		sudo pip3 install tailer --break-system-packages
-		sudo pip3 install six --break-system-packages
-		sudo pip3 install psutil --break-system-packages
-		sudo pip3 install PTable --break-system-packages
-		sudo pip3 install ConfigParser --break-system-packages
-		sudo pip3 install pysqlite3 --break-system-packages
-		sudo pip3 install flask --break-system-packages
-		sudo pip3 install flask_httpauth --break-system-packages
-		sudo pip3 install discord.py --break-system-packages
-		sudo pip3 install prettytable --break-system-packages
+		pip3 install watchgod --break-system-packages
+		pip3 install tailer --break-system-packages
+		pip3 install six --break-system-packages
+		pip3 install psutil --break-system-packages
+		pip3 install PTable --break-system-packages
+		pip3 install ConfigParser --break-system-packages
+		pip3 install pysqlite3 --break-system-packages
+		pip3 install flask --break-system-packages
+		pip3 install flask_httpauth --break-system-packages
+		pip3 install discord.py --break-system-packages
+		pip3 install prettytable --break-system-packages
             ubuntu;
               ;;
           "Python2")
