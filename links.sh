@@ -23,4 +23,4 @@ MACHINE_TYPE=`uname -m`
 		# Copies Binaries so you can run openjk.i386 or mbiided.i386 as your engine
 		sudo cp $HOME/openjk/mbiided.i386 /usr/bin/
 
-		sudo chmod +755 /usr/bin/mbiided.i386
+		sudo chmod 755 /usr/bin/mbiided.i386
