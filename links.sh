@@ -14,7 +14,7 @@ MACHINE_TYPE=`uname -m`
 		sudo ln -s $SCRIPTPATH/mbii.py /usr/bin/mbii
 		sudo chmod +x /usr/bin/mbii
 
-                unlink $HOME/.local/share/
+                unlink $HOME/.local/share/openjk
 		mkdir -p $HOME/.local/share/
 		ln -s $HOME/openjk $HOME/.local/share/
 
