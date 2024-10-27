@@ -10,7 +10,6 @@ Then under mbiiez user account run:
 
 - git clone https://github.com/Wookiee-/mbiiez.git
 - cd mbiiez
-- chmod +x *.sh
 - ./install.sh
 
 ## Changelog 
