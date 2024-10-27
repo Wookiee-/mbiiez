@@ -97,8 +97,11 @@ debian () {
 		sudo ln -s $SCRIPTPATH/mbii.py /usr/bin/mbii
 		sudo chmod +x /usr/bin/mbii
 
-		mkdir -p $HOME/.local/share/
-		ln -s $HOME/openjk $HOME/.local/share/
+                unlink $HOME/.local/share/
+                mkdir -p $HOME/.local/share/
+                ln -s $HOME/openjk $HOME/.local/share/
+
+                mkdir -p $HOME/openjk/log
 
 		# Copies Binaries so you can run openjk.i386 or mbiided.i386 as your engine
 		sudo cp $HOME/openjk/mbiided.i386 /usr/bin/
@@ -230,8 +233,11 @@ ubuntu () {
 		sudo ln -s $SCRIPTPATH/mbii.py /usr/bin/mbii
 		sudo chmod +x /usr/bin/mbii
 
-		mkdir -p $HOME/.local/share/
-		ln -s $HOME/openjk $HOME/.local/share/
+                unlink $HOME/.local/share/
+                mkdir -p $HOME/.local/share/
+                ln -s $HOME/openjk $HOME/.local/share/
+
+                mkdir -p $HOME/openjk/log
 
 		# Copies Binaries so you can run openjk.i386 or mbiided.i386 as your engine
 		sudo cp $HOME/openjk/mbiided.i386 /usr/bin/

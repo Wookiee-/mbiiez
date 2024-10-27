@@ -16,6 +16,7 @@ New changes to run this under user other than through root user.
 4. Pre-CTF installer before 1.9 for those who don't want the CTF -REMOVED-
 5. Dotnet 6 SDK updated from 3.11
 6. Pyenv is now used for python2 environment under the user so it doesn't break the system. 
+7. If you already saved/transferred your MBII folder you can skip the MBII Server install and just use ./links.sh
 
 ## Movie Battles II EZ
 
