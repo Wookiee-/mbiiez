@@ -6,7 +6,12 @@ If you are under root user please run:-
 - chmod +x runasroot.sh
 - ./runasroot.sh
 
-New changes to run this under user other than through root user.
+Then under mbiiez user account run:
+
+- git clone https://github.com/Wookiee-/mbiiez.git
+- cd mbiiez
+- chmod +x *.sh
+- ./install.sh
 
 ## Changelog 
 
