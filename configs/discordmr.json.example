@@ -19,6 +19,9 @@
 		],
 		"repeat_minutes":5
 	},
+	"auto_map_rotation":{
+		"rotate_minutes": 30
+	},	
 	"stats":{},
 	"discord_bot":{
 		"token": "[IF WANTING TO USE A DISCORD BOT, ADD YOUR TOKEN HERE]",
@@ -40,7 +43,6 @@
     "competitive_config":0,
     "balance_mode":-1,
     "message_of_the_day":"my message of the day\nhello everyone!"
-    "map":"mb2_smuggler"
   },  
   "smod":{
     "admin_1":{
@@ -101,6 +103,17 @@
     "Mandalorian":50,
     "ArcTrooper":50
   },
+  "map_rotation_order":[
+    "mb2_corellia",  
+    "mb2_commtower",
+    "mb2_lunarbase",	
+    "mb2_enclave",
+    "mb2_jabba",
+    "mb2_jeditemple",
+    "mb2_cloudcity",
+    "mb2_kamino",
+    "mb2_dxun"
+  ],
   "primary_maps":[
 	"mb2_alderaan",
 	"mb2_boc",
