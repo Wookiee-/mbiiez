@@ -21,6 +21,7 @@ Then under mbiiez user account run:
 5. Dotnet 6 SDK updated from 3.11
 6. Pyenv is now used for python2 environment under the user so it doesn't break the system. 
 7. If you already saved/transferred your MBII folder you can skip the MBII Server install and just use ./links.sh
+8. Map rotation json example files are renamed in the mbiiez/configs and mbiiez/mbiiez folder ending with mr. defaultmr.json.example, discordmr.json.example, servermr.template and confmr.py.
 
 ## Movie Battles II EZ
 
