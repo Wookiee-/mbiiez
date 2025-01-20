@@ -21,11 +21,11 @@ debian () {
 	if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 		sudo dpkg --add-architecture i386
                 sudo apt-get update
-		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4:i386 libsdl2-dev:i386
-	else 
+		sudo apt-get install -y libc6:i386 libncurses6:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4t64:i386
+	else
                 sudo apt-get update
-		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4:i386 libsdl2-dev:i386
-	fi
+		sudo apt-get install -y libc6:i386 libncurses6:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4t64:i386 
+	fi		
 		debian;
               ;;
           "Python Tools")
@@ -152,14 +152,14 @@ ubuntu () {
   do
       case $opt in
           "Dependancies")
-	if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-		sudo dpkg --add-architecture i386
+        if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+                sudo dpkg --add-architecture i386
                 sudo apt-get update
-		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4:i386 libsdl2-dev:i386
-	else
+                sudo apt-get install -y libc6:i386 libncurses6:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4t64:i386
+        else
                 sudo apt-get update
-		sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4:i386 libsdl2-dev:i386
-	fi
+                sudo apt-get install -y libc6:i386 libncurses6:i386 libstdc++6:i386 zlib1g:i386 curl:i386 lib32z1 build-essential cmake gcc-multilib g++-multilib libjpeg-dev:i386 libpng-dev:i386 zlib1g-dev:i386 libcurl4t64:i386
+        fi
             ubuntu;
               ;;
           "Python Tools")
