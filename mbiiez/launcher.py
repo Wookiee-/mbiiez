@@ -81,7 +81,7 @@ class launcher:
         # Wait for the log file to become available
         self.log_handler.log_await()
         
-        cmd = "python $HOME/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
+        cmd = "python /home/mbiiez/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
 
         subprocess.check_call(shlex.split(cmd),stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
@@ -106,15 +106,15 @@ class launcher:
         # os.system("chmod +x {}/{}".format("/usr/bin", self.config['server']['engine']))  
           
         # Sym Links
-        if(os.path.exists("$HOME/.local/share/openjk")):
-            if(not os.path.islink("$HOME/.local/share/openjk")):
-                shutil.rmtree("$HOME/.local/share/openjk")       
-                os.symlink(settings.locations.game_path, "$HOME/.local/share/openjk")
+        if(os.path.exists("/home/mbiiez/.local/share/openjk")):
+            if(not os.path.islink("/home/mbiiez/.local/share/openjk")):
+                shutil.rmtree("/home/mbiiez/.local/share/openjk")       
+                os.symlink(settings.locations.game_path, "/home/mbiiez/.local/share/openjk")
         
-        if(os.path.exists("$HOME/.ja")):
-            if(not os.path.islink("$HOME/.ja")):
-                shutil.rmtree("$HOME/.ja")       
-                os.symlink(settings.locations.game_path, "$HOME/.ja")  
+        if(os.path.exists("/home/mbiiez/.ja")):
+            if(not os.path.islink("/home/mbiiez/.ja")):
+                shutil.rmtree("/home/mbiiez/.ja")       
+                os.symlink(settings.locations.game_path, "/home/mbiiez/.ja")  
     
         self.process_handler.start(self.launch_dedicated_server_thread, self.name_dedicated, self.instance_name)
 
