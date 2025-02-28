@@ -77,7 +77,7 @@ class process_handler:
         # It is a shell command so run inside a python container so we have the pid
         else:
             # Output from this process is sent to this log file, but is cleared on every restart. 
-            std_out_file = "/home/mbiiez/openjk/log/{}-{}-output.log".format(instance.lower(),name.lower())
+            std_out_file = "$HOME/openjk/MBII/{}-{}-output.log".format(instance.lower(),name.lower())
 
             # Used to clear the file, these output looks are not for persistant logging
             open(std_out_file, 'w').close()

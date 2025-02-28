@@ -102,7 +102,7 @@ class instance:
 
         ''' RTV Service, Eventually move to a plugin ''' 
         if(self.config['server']['enable_rtv']):
-            cmd = "python /home/mbiiez/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
+            cmd = "python $HOME/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
             self.process_handler.register_service("RTVRTM", cmd, 999, self.log_handler.log_await) 
             
     def events_internal(self):
@@ -338,15 +338,15 @@ class instance:
             # os.system("chmod +x {}/{}".format("/usr/bin", self.config['server']['engine']))  
               
             # Sym Links
-            if(os.path.exists("/home/mbiiez/.local/share/openjk")):
-                if(not os.path.islink("/home/mbiiez/.local/share/openjk")):
-                    shutil.rmtree("/home/mbiiez/.local/share/openjk")       
-                    os.symlink(settings.locations.game_path, "/home/mbiiez/.local/share/openjk")
+            if(os.path.exists("$HOME/.local/share/openjk")):
+                if(not os.path.islink("$HOME/.local/share/openjk")):
+                    shutil.rmtree("$HOME/.local/share/openjk")       
+                    os.symlink(settings.locations.game_path, "$HOME/.local/share/openjk")
             
-            if(os.path.exists("$/home/mbiiez/.ja")):
-                if(not os.path.islink("/home/mbiiez/.ja")):
-                    shutil.rmtree("/home/mbiiez/.ja")       
-                    os.symlink(settings.locations.game_path, "/home/mbiiez/.ja")  
+            if(os.path.exists("$HOME/.ja")):
+                if(not os.path.islink("$HOME/.ja")):
+                    shutil.rmtree("$HOME/.ja")       
+                    os.symlink(settings.locations.game_path, "$HOME/.ja")  
         
                            
             self.event_handler.run_event("before_launch_server")
