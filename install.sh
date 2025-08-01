@@ -13,7 +13,7 @@ cd $SCRIPTPATH
 install_dependencies() {
     sudo dpkg --add-architecture i386
     sudo apt-get update
-    sudo apt-get install -y libc6-i386 lib32z1
+    sudo apt-get install -y libc6:i386 lib32z1 libstdc++6:i386 libcurl4t64:i386 
 }
 
 install_python_tools() {
@@ -60,11 +60,9 @@ setup_links() {
     mkdir -p $HOME/.local/share/
     ln -s $HOME/openjk $HOME/.local/share/
 
-    cd /usr/bin
     wget https://github.com/Wookiee-/OpenJK/releases/download/R20/mbiided.i386
     chmod +x mbiided.i386
-
-    cd $SCRIPTPATH
+    sudo cp mbiided.i386 /usr/bin 
 }
 
 install_dotnet() {
