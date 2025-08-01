@@ -72,19 +72,26 @@ install_dotnet() {
     chmod +x ./dotnet-install.sh
     ./dotnet-install.sh --channel 6.0
 
-    export DOTNET_ROOT=$HOME/.dotnet
-    export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+    echo "export DOTNET_ROOT=$HOME/.dotnet" >> ~/.bashrc
+    echo "export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools" >> ~/.bashrc
+
+    source ~/.bashrc
 }
 
 install_mbii_updater() {
     cd $SCRIPTPATH/update
-    cp *.* $OPENJKPATH
+
+    wget https://www.moviebattles.org/download/MBII_CLI_Updater.zip
+    unzip *.zip
+
+    cp *.exe $OPENJKPATH
+    cp *.dll $OPENJKPATH
+    cp *.json $OPENJKPATH
 }
 
 update_mbii() {
     cd $OPENJKPATH
-    export DOTNET_ROOT=$HOME/.dotnet
-    export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+
     dotnet MBII_CommandLine_Update_XPlatform.dll
 
     cd $MBIIPATH
@@ -105,8 +112,8 @@ while true; do
     PS3=$'\nEnter your choice (1-9) or 10 to quit: '
     options=(
         "Install Dependencies"
-        "Install Python Tools"
         "Setup Pyenv"
+        "Install Python Tools"
         "Setup RTVRTM"
         "Setup Links"
         "Install Dotnet"
@@ -119,8 +126,8 @@ while true; do
     select opt in "${options[@]}"; do
         case $REPLY in
             1) install_dependencies; break ;;
-            2) install_python_tools; break ;;
-            3) setup_pyenv; break ;;
+            2) setup_pyenv; break ;;
+            3) install_python_tools; break ;;
             4) setup_rtvrtm; break ;;
             5) setup_links; break ;;
             6) install_dotnet; break ;;
