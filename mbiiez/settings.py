@@ -25,8 +25,3 @@ class database:
 
     database = globals.config.get('database', 'database')
     
-class web_service:
-    
-    port = globals.config.get('web_service', 'port')
-    username = globals.config.get('web_service', 'username') 
-    password = globals.config.get('web_service', 'password')     
