@@ -19,7 +19,7 @@ install_dependencies() {
 install_python_tools() {
     sudo apt-get update
     sudo apt-get install -y net-tools fping python3 python3-pip unzip
-    pip3 install --user watchgod tailer six psutil PTable ConfigParser flask flask_httpauth discord.py prettytable
+    pip3 install --user watchgod tailer six psutil PTable ConfigParser flask flask_httpauth discord.py prettytable --break-system-packages
 }
 
 setup_pyenv() {
