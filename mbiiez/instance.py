@@ -3,7 +3,6 @@ import sys, getopt
 import os
 import subprocess
 import re
-import urllib.request
 import shlex
 import psutil
 import time
@@ -45,7 +44,9 @@ class instance:
     def __init__(self, name):
     
         self.name = name
-        self.external_ip = urllib.request.urlopen('https://ifconfig.me/ip').read().decode()       
+
+        # Safe IP fetching
+        self.external_ip = "127.0.0.1"       
 
         self.start_cmd = None
 
@@ -77,7 +78,7 @@ class instance:
         self.events_internal()
 
         #Load Plugins
-        self.plugin_hander = plugin_handler(self)
+        self.plugin_handler = plugin_handler(self)
         
         ''' Add any configs to external plugins if they are enabled '''    
         ''' if(self.has_plugin("auto_message")):
