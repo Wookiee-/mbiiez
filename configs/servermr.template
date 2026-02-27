@@ -44,7 +44,7 @@ seta sv_privateClients ""
 seta sv_privatePassword ""     
 
 seta sv_pure "0"                
-seta sv_maxRate "50000"         
+seta sv_maxRate "25000"         
 seta sv_maxPing "0"             
 seta sv_timeout "600"           
 seta sv_minSnaps "20"           
