@@ -24,12 +24,15 @@ sudo sysctl -w net.core.netdev_max_backlog=5000
 echo "[*] Checking and updating mbiiez user limits..."
 LIMITS_FILE="/etc/security/limits.conf"
 
-# Check if limits are already applied to avoid duplicates
-if ! grep -q "mbiiez soft nofile 65535" "$LIMITS_FILE"; then
-    echo "[*] Adding limits to $LIMITS_FILE..."
-    echo -e "mbiiez soft nofile 65535\nmbiiez hard nofile 65535" | sudo tee -a "$LIMITS_FILE" > /dev/null
+# 3. Check Ulimit for mbiiez
+echo "[*] Checking ulimit for mbiiez user..."
+# Using -Sn to get the soft limit specifically
+CURRENT_ULIMIT=$(su - mbiiez -c "ulimit -Sn")
+
+if [ "$CURRENT_ULIMIT" -lt 65535 ]; then
+    echo "[!] WARNING: mbiiez ulimit is $CURRENT_ULIMIT. Ensure /etc/security/limits.conf is updated!"
 else
-    echo "[✓] Limits already present in $LIMITS_FILE."
+    echo "[✓] mbiiez ulimit is healthy (65535)"
 fi
 
 # Apply current session limit for the check
