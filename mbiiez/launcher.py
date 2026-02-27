@@ -6,6 +6,7 @@ import time
 import signal
 import datetime
 import shlex
+import resource
 
 from mbiiez.bcolors import bcolors
 from mbiiez.conf import conf
@@ -61,6 +62,21 @@ class launcher:
             
             while(not self.process_handler.process_status("OpenJK")): 
                 print("Starting OpenJK Dedicated...")
+
+                try:
+                    resource.setrlimit(resource.RLIMIT_NOFILE, (65535, 65535))
+                except Exception as e:
+                    self.log_handler.log(f"Warning: Could not set ulimit: {e}")
+
+                cpu_count = os.cpu_count()
+                target_core = 1 if cpu_count > 1 else 0
+                
+                def set_affinity():
+                    try:
+                        os.sched_setaffinity(0, {target_core})
+                    except Exception:
+                        pass 
+
                 self.log_handler.log("Starting OpenJK Dedicated Server")
                 cmd = "nohup {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(self.config['server']['engine'], self.config['server']['port'], settings.dedicated.game, self.config['server']['server_config_file']);       
                 process = subprocess.Popen(shlex.split(cmd), shell=False)  # ,stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL   
