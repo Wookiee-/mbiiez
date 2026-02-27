@@ -68,18 +68,26 @@ class launcher:
                 except Exception as e:
                     self.log_handler.log(f"Warning: Could not set ulimit: {e}")
 
-                cpu_count = os.cpu_count()
-                target_core = 1 if cpu_count > 1 else 0
-                
-                def set_affinity():
-                    try:
-                        os.sched_setaffinity(0, {target_core})
-                    except Exception:
-                        pass 
+                # --- OPTIMIZATION BLOCK START ---
+                # REMOVED: Affinity check as cores are oversubscribed.
+                # --------------------------------
 
                 self.log_handler.log("Starting OpenJK Dedicated Server")
-                cmd = "nohup {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(self.config['server']['engine'], self.config['server']['port'], settings.dedicated.game, self.config['server']['server_config_file']);       
-                process = subprocess.Popen(shlex.split(cmd), shell=False)  # ,stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL   
+                
+                # MODIFIED: Prepended 'nice -n -10' to raise priority
+                cmd = "nice -n -10 nohup {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
+                    self.config['server']['engine'], 
+                    self.config['server']['port'], 
+                    settings.dedicated.game, 
+                    self.config['server']['server_config_file']
+                )       
+                
+                # REMOVED: preexec_fn as affinity is disabled
+                process = subprocess.Popen(
+                    shlex.split(cmd), 
+                    shell=False
+                )  
+                
                 pid = process.pid
                 self.process_handler.add_pid("OpenJK", pid, self.instance_name)
                 print(pid)
