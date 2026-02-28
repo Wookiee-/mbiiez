@@ -1,66 +1,63 @@
 #!/bin/bash
 
-# Configuration: The Aggressive "Movie Battles II" Profile
-HIGH_THRESH=134217728  # 128MB
-LOW_THRESH=100663296   # 96MB
+# =======================================================
+# Tuned MB2 VDS Optimizer - Networking & Limits Only
+# Target: 2GB RAM / 4 Instances (Movie Battles II)
+# =======================================================
 
 echo "-------------------------------------------------------"
-echo " MB2 VDS Optimizer: Aggressive Frag patience"
+echo " MB2 VDS Optimizer: Networking Profile (No Zram)"
 echo "-------------------------------------------------------"
 
-# 1. Apply High Thresh FIRST to avoid "Invalid Argument"
-echo "[*] Raising memory ceiling..."
-sudo sysctl -w net.ipv4.ipfrag_high_thresh=$HIGH_THRESH
+# 1. Conservative thresholds for IP Fragmentation
+# Prevents kernel from hogging RAM for packet reassembly
+# High: 64MB, Low: 48MB (Reduced from original)
+sudo sysctl -w net.ipv4.ipfrag_high_thresh=67108864
+sudo sysctl -w net.ipv4.ipfrag_low_thresh=50331648
+sudo sysctl -w net.ipv4.ipfrag_time=60
 
-# 2. Now apply the rest
-echo "[*] Setting cleanup floor and timeout..."
-sudo sysctl -w net.ipv4.ipfrag_low_thresh=$LOW_THRESH
-sudo sysctl -w net.ipv4.ipfrag_time=120
-sudo sysctl -w net.core.rmem_max=26214400
-sudo sysctl -w net.core.wmem_max=26214400
-sudo sysctl -w net.core.netdev_max_backlog=5000
+# 2. Optimized Network Buffers
+# Reduced from original 25MB to 12MB. Saves ~100MB RAM total
+# for 4 instances. Crucial for 2GB VPS.
+sudo sysctl -w net.core.rmem_max=12582912
+sudo sysctl -w net.core.wmem_max=12582912
+sudo sysctl -w net.core.netdev_max_backlog=2000
 
-# 3. Check and Update Ulimit for mbiiez
+# 3. Security & Stability
+sudo sysctl -w net.ipv4.tcp_syncookies=1
+
+# 4. Update Ulimit for mbiiez
 echo "[*] Checking and updating mbiiez user limits..."
-LIMITS_FILE="/etc/security/limits.conf"
-
-# 3. Check Ulimit for mbiiez
-echo "[*] Checking ulimit for mbiiez user..."
-# Using -Sn to get the soft limit specifically
 CURRENT_ULIMIT=$(su - mbiiez -c "ulimit -Sn")
 
 if [ "$CURRENT_ULIMIT" -lt 65535 ]; then
-    echo "[!] WARNING: mbiiez ulimit is $CURRENT_ULIMIT. Ensure /etc/security/limits.conf is updated!"
+    echo "[!] WARNING: mbiiez ulimit is $CURRENT_ULIMIT."
+    echo "[!] Ensure /etc/security/limits.conf is updated."
 else
     echo "[✓] mbiiez ulimit is healthy (65535)"
 fi
 
-# Apply current session limit for the check
+# Apply current session limit
 sudo ulimit -n 65535
-CURRENT_ULIMIT=$(ulimit -n)
-echo "[✓] Current session ulimit is $CURRENT_ULIMIT"
+echo "[✓] Current session ulimit is $(ulimit -n)"
 
-# 4. Make it permanent for reboots
+# 5. Make it permanent
 CONF_FILE="/etc/sysctl.d/99-mb2-performance.conf"
-
-# Use 'tee' to create or update the configuration file safely
-if [ ! -f "$CONF_FILE" ]; then
-    echo "[*] Creating permanent configuration file at $CONF_FILE"
-    cat <<EOF | sudo tee $CONF_FILE > /dev/null
-net.ipv4.ipfrag_high_thresh = $HIGH_THRESH
-net.ipv4.ipfrag_low_thresh = $LOW_THRESH
-net.ipv4.ipfrag_time = 120
-net.core.rmem_max = 26214400
-net.core.wmem_max = 26214400
-net.core.netdev_max_backlog = 5000
+echo "[*] Writing permanent configuration to $CONF_FILE"
+cat <<EOF | sudo tee $CONF_FILE > /dev/null
+# MB2 Performance Tuning - Networking Profile
+net.ipv4.ipfrag_high_thresh = 67108864
+net.ipv4.ipfrag_low_thresh = 50331648
+net.ipv4.ipfrag_time = 60
+net.core.rmem_max = 12582912
+net.core.wmem_max = 12582912
+net.core.netdev_max_backlog = 2000
+net.ipv4.tcp_syncookies = 1
 EOF
-else
-    echo "[✓] Configuration file $CONF_FILE already exists, skipping creation."
-fi
 
-echo "-------------------------------------------------------"
-echo " Final Verification:"
-sysctl net.ipv4.ipfrag_high_thresh net.ipv4.ipfrag_low_thresh
-echo "-------------------------------------------------------"
-
+# Apply immediately
 sudo sysctl -p
+
+echo "-------------------------------------------------------"
+echo " Networking Optimizer Complete."
+echo "-------------------------------------------------------"
