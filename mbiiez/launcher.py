@@ -74,13 +74,18 @@ class launcher:
 
                 self.log_handler.log("Starting OpenJK Dedicated Server")
                 
-                # MODIFIED: Prepended 'nice -n -10' to raise priority
-                cmd = "nice -n -10 nohup {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
+                # Assuming 'instance_name' is the string "duel" from your command line
+                screen_name = "mb2_{}".format(instance_name)
+
+                # MODIFIED: Launching via screen with the JSON-based name
+                # We keep the engine and port variables from your existing self.config
+                cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
+                    screen_name,
                     self.config['server']['engine'], 
                     self.config['server']['port'], 
-                    settings.dedicated.game, 
+                    self.config['server']['game'], # Usually "MBII"
                     self.config['server']['server_config_file']
-                )       
+                )     
                 
                 # REMOVED: preexec_fn as affinity is disabled
                 process = subprocess.Popen(
