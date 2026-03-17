@@ -87,20 +87,12 @@ class instance:
     def services_internal(self):
         ''' Internal Services we wish to start on an instance start ''' 
 
-        screen_name = "mb2_{}".format(self.name)
-        
-        cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
-            screen_name,
-            self.config['server']['engine'], 
-            self.config['server']['port'], 
-            self.get_game(), 
-            self.config['server']['server_config_file']
-        )
+        ''' Runs the Dedicated OpenJK Server ''' 
+        cmd = "{} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(self.config['server']['engine'], self.config['server']['port'], self.get_game(), self.config['server']['server_config_file']);       
         
         self.start_cmd = cmd
         
-        # This registers the command to your process_handler
-        print("Registering Service: " + screen_name)
+        print(cmd)
         self.process_handler.register_service("OpenJK", cmd, 1) 
         
         ''' Log Watcher Service ''' 
