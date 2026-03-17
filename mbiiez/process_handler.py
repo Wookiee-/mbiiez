@@ -16,11 +16,8 @@ class process_handler:
     def __init__(self, instance):
         self.instance = instance
                
-    def register_service(self, name, func, priority = 99, awaiter = None):
-        """ 
-            Register a function as a service. Runs as a fork with PIDs stored in database
-        """
-        self.services.append({"name": name, "func": func, "priority": priority, "awaiter": awaiter})
+    def register_service(self, name, func, priority = 99, awaiter = None, supervised = True):
+        self.services.append({"name": name, "func": func, "priority": priority, "awaiter": awaiter, "supervised": supervised})
 
     def launch_services(self):
         """ 
@@ -36,10 +33,10 @@ class process_handler:
         
             self.instance.log_handler.log("Starting Service: " + service['name'])
             print(bcolors.OK + "[Yes] " + bcolors.ENDC + "Launching " + service['name'])   
-            self.start(service['func'], service['name'], self.instance.name)
+            self.start(service['func'], service['name'], self.instance.name, service['supervised'])
             time.sleep(1)
             
-    def start(self, func, name, instance):
+    def start(self, func, name, instance, supervised = True):
         """ 
             Start a given func (or shell command), with name for instance 
         """  
@@ -81,6 +78,13 @@ class process_handler:
 
             # Used to clear the file, these output looks are not for persistant logging
             open(std_out_file, 'w').close()
+
+            if not supervised:
+                # Launch once and move on (Fire & Forget)
+                log = open(std_out_file, 'a')
+                process = subprocess.Popen(shlex.split(func), shell=False, stdin=log, stdout=log, stderr=log) 
+                db().insert("processes", {"name": name, "pid": process.pid, "instance": instance})
+                return
 
             pid = os.fork()
             if(pid == 0):
@@ -133,90 +137,119 @@ class process_handler:
     def process_pid_by_name(self, name):
         """ 
         Find a process pid by its name
-        """           
-        pr = db().select("processes",{"instance": self.instance.name, "name": name})
-        for p in pr:
-            return p['pid']
+        """            
+        pr = db().select("processes", {"instance": self.instance.name, "name": name})
+        # If there are multiple (which shouldn't happen for one instance), 
+        # we return the most recent one.
+        if pr:
+            return pr[-1]['pid']
         return 0
 
     def process_status_name(self, name):
         """ 
-        Is a process running by its name
+        Is a process running by its name within this specific instance?
         """  
-        
-        pr = db().select("processes",{"instance": self.instance.name, "name": name})
+        # Special check for OpenJK/Screen sessions
+        # This ensures that even if the DB is weird, we check the actual system
+        if name == "OpenJK" or name == "Dedicated Server":
+            screen_name = "mb2_{}".format(self.instance.name)
+            # os.WEXITSTATUS returns 0 if the grep found the screen
+            check = os.system(r"screen -ls | grep -q '\.{}$'".format(screen_name))
+            if check == 0:
+                return True
+
+        # Standard check for Python forks (Log Watcher, etc)
+        pr = db().select("processes", {"instance": self.instance.name, "name": name})
      
-        if(len(pr) == 0):
+        if len(pr) == 0:
             return False
-        else:
-            for p in pr:
-                if(self.process_status_pid(p['pid'])):
-                    return True
-                else:
-                    return False
+        
+        # Check if the PIDs recorded in the DB actually exist on the system
+        for p in pr:
+            if self.process_status_pid(p['pid']):
+                return True
+        
+        return False
        
     def process_status_pid(self, pid):
         """ 
-        Is a process running by its pid
+        Is a process running by its pid?
         """    
+        if pid <= 0:
+            return False
+            
         try:
-             os.kill(pid, 0)
-             return True
+            # Signal 0 does not kill the process, but performs error checking.
+            # It checks if the PID is valid and if we have permission to send signals.
+            os.kill(pid, 0)
+            return True
              
-        except OSError:           
+        except (OSError, ProcessLookupError):           
             return False
        
     def stop_all(self):
         """ 
-        Stops all processes for this instance
+        Stops all processes for this instance only
         """  
-        pr = db().select("processes",{"instance": self.instance.name})
+        # 1. Get all recorded processes for THIS instance from the DB
+        pr = db().select("processes", {"instance": self.instance.name})
 
+        # 2. Stop Python background forks (Managers, Log Watchers)
+        # We kill the manager first so it doesn't restart the engine while we are stopping it
         for p in pr:          
-            if(self.process_status_pid(p['pid'])):           
-                if(self.stop_process_pid(p['pid'])):
-                    # Extra DB not really needed but best to be safe
-                    db().delete("processes", p['id'])
-                    print(bcolors.GREEN + "[Yes]" + bcolors.ENDC +  " Stopped {}".format(str(p['name'])))
-                else:
-                    print(bcolors.RED + "[No]" + bcolors.ENDC +  " Stopped {}".format(str(p['name']))) 
+            if self.process_status_pid(p['pid']):           
+                self.stop_process_pid(p['pid'])
+                print(bcolors.GREEN + "[Yes]" + bcolors.ENDC + " Stopped {}".format(str(p['name'])))
             else:
                 db().delete("processes", p['id'])
 
-        # The above is quite good for keeping track of processes, ultimately it does not work....
-        # This is the brute force... burn it all, command
-        cmd = "ps aux | grep -ie " + self.instance.name + "- | awk '{print $2}' | xargs kill -15 >/dev/null 2>&1"
-        os.system(cmd)                 
+        # 3. Port-Safe Screen Cleanup
+        # This only kills the screen session named 'mb2_[instance]'
+        screen_name = "mb2_{}".format(self.instance.name)
+        
+        # This sends a quit command to the specific screen session
+        os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
+        
+        # 4. Final Cleanup
+        os.system("screen -wipe >/dev/null 2>&1")
+        
+        # Clear DB for this instance only
+        db().execute("delete from processes where instance = '{}'".format(self.instance.name))
+        
+        print((bcolors.RED + "Instance {} has been safely stopped." + bcolors.ENDC).format(self.instance.name))
 
 
     def stop_process_name(self, name):
         """ 
-        Stops all process by its name
+        Stops all process by its name within this instance
         """         
-        pr = db().select("processes",{"instance": self.instance.name, "name": name})
-        db().execute("delete from processes where instance = \"{}\" and name = \"{}\"".format(self.instance.name, name))
+        pr = db().select("processes", {"instance": self.instance.name, "name": name})
         
-        if(len(pr) == 0): # Without its pid we cant do anything here
+        if len(pr) == 0:
+            # Fallback for the engine if it's not in the DB
+            if name == "OpenJK":
+                screen_name = "mb2_{}".format(self.instance.name)
+                os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
             return False
-        else:
-            for p in pr:
-                if(self.process_status_pid(p['pid'])):
-                    return self.stop_process_pid(p['pid'])
-                else:
-                    return False
+        
+        for p in pr:
+            self.stop_process_pid(p['pid'])
+        
+        db().execute("delete from processes where instance = \"{}\" and name = \"{}\"".format(self.instance.name, name))
+        return True
+
             
     def stop_process_pid(self, pid):
         """ 
         Stops process by its pid
         """         
-        
         try:
-            db().execute("delete from processes where pid = {}".format(pid))
-        
-            if(self.process_status_pid(pid)):
+            if self.process_status_pid(pid):
+                # Hard kill for this specific PID
                 os.kill(pid, 9)
-
+            
+            db().execute("delete from processes where pid = {}".format(pid))
             return True
              
         except OSError:           
-            return False    
+            return False  
