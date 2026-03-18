@@ -89,20 +89,12 @@ class instance:
 
         screen_name = "mb2_{}".format(self.name)
         
-        # Define a unique homepath so instances don't fight over sv.lock or journal.log
-        instance_homepath = "/home/mbiiez/.mbii_{}".format(self.name)
-        
-        # Ensure the directory exists before starting
-        if not os.path.exists(instance_homepath):
-            os.makedirs(instance_homepath)
-
-        # Added +set fs_homepath {} to the cmd string
-        cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +set fs_homepath {} +exec {}".format(
+        # We use screen -dmS so it manages itself in the background
+        cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
             screen_name,
             self.config['server']['engine'], 
             self.config['server']['port'], 
             self.get_game(), 
-            instance_homepath, # The unique path for this instance
             self.config['server']['server_config_file']
         )
         
@@ -119,9 +111,8 @@ class instance:
 
         ''' RTV Service, Eventually move to a plugin ''' 
         if(self.config['server']['enable_rtv']):
-            # Ensure RTVRTM uses the specific config for this instance
             cmd = "python /home/mbiiez/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
-            self.process_handler.register_service("RTVRTM", cmd, 999, self.log_handler.log_await)
+            self.process_handler.register_service("RTVRTM", cmd, 999, self.log_handler.log_await) 
             
     def events_internal(self):
         ''' Events we wish to run internal methods on '''
