@@ -7,6 +7,7 @@ import os
 import time
 import subprocess
 import shlex
+import socket
 
 class process_handler:
 
@@ -146,22 +147,31 @@ class process_handler:
         return 0
 
     def process_status_name(self, name):
-        """ 
-        Enhanced status check: Check screen AND the actual binary.
-        """  
-        if name in ["OpenJK", "Dedicated Server", "mbiided"]:
-            screen_name = "mb2_{}".format(self.instance.name)
-            
-            # Check if screen exists
-            screen_check = os.system(r"screen -ls | grep -q '\.{}$'".format(screen_name))
-            
-            # Check if the binary is actually running with this instance name
-            # pgrep -f returns 0 if a match is found
-            binary_check = os.system("pgrep -f '{}' > /dev/null".format(screen_name))
-            
-            # If either the screen or the binary is alive, the instance is 'Running'
-            if screen_check == 0 or binary_check == 0:
-                return True
+        screen_name = "mb2_{}".format(self.instance.name)
+        
+        # 1. Check if the screen/binary is physically there
+        binary_check = os.system(r"pgrep -f 'screen.*{}' > /dev/null".format(screen_name))
+        if binary_check != 0:
+            return False
+
+        # 2. Heartbeat Check: See if the UDP port is actually open
+        # If the engine is a zombie, the port will usually be unreachable
+        port = int(self.instance.config['server']['port'])
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # We don't need to send data, just see if we can bind/connect
+            sock.settimeout(1.0)
+            # Note: UDP is connectionless, so we check if the OS reports the port as occupied
+            # by trying to bind to it. If bind FAILS, the engine is still holding it.
+            # If bind SUCCEEDS, the engine has dropped the port and is a zombie.
+            test_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            test_sock.bind(('', port))
+            test_sock.close()
+            # If we got here, the port is FREE, meaning the engine is dead/zombie
+            return False
+        except:
+            # Port is occupied, engine is likely alive
+            return True
        
     def process_status_pid(self, pid):
         """ 
@@ -181,49 +191,61 @@ class process_handler:
        
     def stop_all(self):
         """ 
-        Stops all processes for this instance with a more aggressive engine cleanup.
+        Stops all processes by targeting the specific port and screen.
         """  
-        screen_name = "mb2_{}".format(self.instance.name)
+        instance_name = self.instance.name
+        screen_name = "mb2_{}".format(instance_name)
+        port = self.instance.config['server']['port'] # Extract the unique port
         
         # 1. Kill Python forks from DB
-        pr = db().select("processes", {"instance": self.instance.name})
+        pr = db().select("processes", {"instance": instance_name})
         for p in pr:           
             self.stop_process_pid(p['pid'])
 
-        # 2. IMPROVED: Find and Kill the engine by looking for the instance name in the cmdline
-        # This catches 'mbiided' even if screen has already closed/crashed
-        os.system("pkill -9 -f '{}'".format(screen_name))
+        # 2. TARGET THE PORT: Kill whatever is listening on this instance's port
+        # This is the most reliable way to kill the specific mbiided engine
+        os.system("fuser -k {}/udp >/dev/null 2>&1".format(port))
         
-        # 3. Target the binary name directly just in case
-        os.system("pkill -9 mbiided.i386")
-
+        # 3. Target the Screen Name as a backup
+        os.system(r"pkill -9 -f '{}'".format(screen_name))
+        
         # 4. Final Screen Cleanup
         os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
         os.system("screen -wipe >/dev/null 2>&1")
         
-        db().execute("delete from processes where instance = '{}'".format(self.instance.name))
-        print(bcolors.RED + f"Instance {self.instance.name} cleaned and wiped." + bcolors.ENDC)
+        # 5. Clear DB
+        db().execute("delete from processes where instance = '{}'".format(instance_name))
+        print(bcolors.RED + f"Instance {instance_name} (Port {port}) fully terminated." + bcolors.ENDC)
 
 
     def stop_process_name(self, name):
         """ 
-        Stops all process by its name within this instance
+        Stops all processes by its name within this instance
         """         
         pr = db().select("processes", {"instance": self.instance.name, "name": name})
         
-        if len(pr) == 0:
-            # Fallback: If it's the engine, force kill it by screen name pattern
-            if name == "OpenJK" or name == "mbiided":
-                # Ensure we are killing the specific instance screen
-                screen_name = "mb2_{}".format(self.instance.name)
-                # This specifically targets the screen name you set in launcher.py
-                os.system("pkill -9 -f 'screen.*-dmS {}'".format(screen_name))
-                os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
+        # 1. Handle Engine/Screen fallback if no DB record exists
+        # We check both "OpenJK" and "Dedicated Server" (the name used in launcher.py)
+        if name in ["OpenJK", "mbiided", "Dedicated Server"]:
+            screen_name = "mb2_{}".format(self.instance.name)
+            port = self.instance.config['server']['port']
+
+            # Force kill whatever is holding the port (Most reliable for engines)
+            os.system("fuser -k {}/udp >/dev/null 2>&1".format(port))
+            
+            # Kill the screen session and its children using the anchored regex
+            os.system(r"pkill -9 -f '\.{}$'".format(screen_name))
+            
+            # Clean up the screen socket
+            os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
+            os.system("screen -wipe >/dev/null 2>&1")
         
+        # 2. Stop Python processes (Log Watcher, RTVRTM, etc) from DB records
         for p in pr:
             self.stop_process_pid(p['pid'])
         
-        db().execute("delete from processes where instance = \"{}\" and name = \"{}\"".format(self.instance.name, name))
+        # 3. Final cleanup of the DB for this specific name
+        db().execute("delete from processes where instance = '{}' and name = '{}'".format(self.instance.name, name))
         return True
 
             
@@ -231,13 +253,19 @@ class process_handler:
         """ 
         Stops process by its pid
         """         
+        if pid <= 0:
+            return False
+
         try:
             if self.process_status_pid(pid):
                 # Hard kill for this specific PID
                 os.kill(pid, 9)
             
+            # Use a parameterized query or ensure string formatting is safe
             db().execute("delete from processes where pid = {}".format(pid))
             return True
              
-        except OSError:           
-            return False  
+        except (OSError, ProcessLookupError):           
+            # Even if the process is already gone, ensure it's removed from DB
+            db().execute("delete from processes where pid = {}".format(pid))
+            return False 
