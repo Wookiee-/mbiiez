@@ -147,29 +147,21 @@ class process_handler:
 
     def process_status_name(self, name):
         """ 
-        Is a process running by its name within this specific instance?
+        Enhanced status check: Check screen AND the actual binary.
         """  
-        # Special check for OpenJK/Screen sessions
-        # This ensures that even if the DB is weird, we check the actual system
-        if name == "OpenJK" or name == "Dedicated Server":
+        if name in ["OpenJK", "Dedicated Server", "mbiided"]:
             screen_name = "mb2_{}".format(self.instance.name)
-            # os.WEXITSTATUS returns 0 if the grep found the screen
-            check = os.system(r"screen -ls | grep -q '\.{}$'".format(screen_name))
-            if check == 0:
+            
+            # Check if screen exists
+            screen_check = os.system(r"screen -ls | grep -q '\.{}$'".format(screen_name))
+            
+            # Check if the binary is actually running with this instance name
+            # pgrep -f returns 0 if a match is found
+            binary_check = os.system("pgrep -f '{}' > /dev/null".format(screen_name))
+            
+            # If either the screen or the binary is alive, the instance is 'Running'
+            if screen_check == 0 or binary_check == 0:
                 return True
-
-        # Standard check for Python forks (Log Watcher, etc)
-        pr = db().select("processes", {"instance": self.instance.name, "name": name})
-     
-        if len(pr) == 0:
-            return False
-        
-        # Check if the PIDs recorded in the DB actually exist on the system
-        for p in pr:
-            if self.process_status_pid(p['pid']):
-                return True
-        
-        return False
        
     def process_status_pid(self, pid):
         """ 
@@ -189,35 +181,28 @@ class process_handler:
        
     def stop_all(self):
         """ 
-        Stops all processes for this instance only, with a forced cleanup for the engine.
+        Stops all processes for this instance with a more aggressive engine cleanup.
         """  
-        # 1. Get all recorded processes for THIS instance from the DB
-        pr = db().select("processes", {"instance": self.instance.name})
-
-        # 2. Stop Python background forks (Managers, Log Watchers)
-        for p in pr:          
-            if self.process_status_pid(p['pid']):           
-                self.stop_process_pid(p['pid'])
-                print(bcolors.GREEN + "[Yes]" + bcolors.ENDC + " Stopped {}".format(str(p['name'])))
-            else:
-                db().delete("processes", p['id'])
-
-        # 3. Port-Safe Engine Hard Kill (-9)
-        # We find the mbiided process attached to this specific screen session and kill it.
         screen_name = "mb2_{}".format(self.instance.name)
         
-        # This targets the process tree of the specific screen name
-        # It ensures that even if screen is stuck, mbiided is wiped out.
-        os.system("pkill -9 -f 'screen.*-S {}.*mbiided'".format(screen_name))
+        # 1. Kill Python forks from DB
+        pr = db().select("processes", {"instance": self.instance.name})
+        for p in pr:           
+            self.stop_process_pid(p['pid'])
+
+        # 2. IMPROVED: Find and Kill the engine by looking for the instance name in the cmdline
+        # This catches 'mbiided' even if screen has already closed/crashed
+        os.system("pkill -9 -f '{}'".format(screen_name))
         
+        # 3. Target the binary name directly just in case
+        os.system("pkill -9 mbiided.i386")
+
         # 4. Final Screen Cleanup
         os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
         os.system("screen -wipe >/dev/null 2>&1")
         
-        # Clear DB for this instance only
         db().execute("delete from processes where instance = '{}'".format(self.instance.name))
-        
-        print((bcolors.RED + "Instance {} and its engine have been hard-killed." + bcolors.ENDC).format(self.instance.name))
+        print(bcolors.RED + f"Instance {self.instance.name} cleaned and wiped." + bcolors.ENDC)
 
 
     def stop_process_name(self, name):
