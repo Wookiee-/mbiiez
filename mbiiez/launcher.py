@@ -63,15 +63,25 @@ class launcher:
             while(not self.process_handler.process_status("OpenJK")): 
                 print("Starting OpenJK Dedicated...")
                 self.log_handler.log("Starting OpenJK Dedicated Server")
+                
                 screen_name = "mb2_{}".format(self.instance_name)
-                cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
+                
+                # Create a unique homepath for this instance to prevent file locks
+                instance_homepath = "/home/mbiiez/.mbii_{}".format(self.instance_name)
+                if not os.path.exists(instance_homepath):
+                    os.makedirs(instance_homepath)
+
+                # Added +set fs_homepath to the command
+                cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +set fs_homepath {} +exec {}".format(
                     screen_name,
                     self.config['server']['engine'], 
                     self.config['server']['port'], 
                     "MBII", 
+                    instance_homepath,
                     self.config['server']['server_config_file']
                 )       
-                process = subprocess.Popen(shlex.split(cmd), shell=False)  # ,stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL   
+                
+                process = subprocess.Popen(shlex.split(cmd), shell=False)
                 pid = process.pid
                 self.process_handler.add_pid("OpenJK", pid, self.instance_name)
                 print(pid)

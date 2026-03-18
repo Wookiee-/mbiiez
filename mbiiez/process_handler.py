@@ -229,10 +229,11 @@ class process_handler:
         if len(pr) == 0:
             # Fallback: If it's the engine, force kill it by screen name pattern
             if name == "OpenJK" or name == "mbiided":
+                # Ensure we are killing the specific instance screen
                 screen_name = "mb2_{}".format(self.instance.name)
-                os.system("pkill -9 -f 'screen.*-S {}.*mbiided'".format(screen_name))
+                # This specifically targets the screen name you set in launcher.py
+                os.system("pkill -9 -f 'screen.*-dmS {}'".format(screen_name))
                 os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
-            return False
         
         for p in pr:
             self.stop_process_pid(p['pid'])
