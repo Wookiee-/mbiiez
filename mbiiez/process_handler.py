@@ -189,13 +189,12 @@ class process_handler:
        
     def stop_all(self):
         """ 
-        Stops all processes for this instance only
+        Stops all processes for this instance only, with a forced cleanup for the engine.
         """  
         # 1. Get all recorded processes for THIS instance from the DB
         pr = db().select("processes", {"instance": self.instance.name})
 
         # 2. Stop Python background forks (Managers, Log Watchers)
-        # We kill the manager first so it doesn't restart the engine while we are stopping it
         for p in pr:          
             if self.process_status_pid(p['pid']):           
                 self.stop_process_pid(p['pid'])
@@ -203,20 +202,22 @@ class process_handler:
             else:
                 db().delete("processes", p['id'])
 
-        # 3. Port-Safe Screen Cleanup
-        # This only kills the screen session named 'mb2_[instance]'
+        # 3. Port-Safe Engine Hard Kill (-9)
+        # We find the mbiided process attached to this specific screen session and kill it.
         screen_name = "mb2_{}".format(self.instance.name)
         
-        # This sends a quit command to the specific screen session
-        os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
+        # This targets the process tree of the specific screen name
+        # It ensures that even if screen is stuck, mbiided is wiped out.
+        os.system("pkill -9 -f 'screen.*-S {}.*mbiided'".format(screen_name))
         
-        # 4. Final Cleanup
+        # 4. Final Screen Cleanup
+        os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
         os.system("screen -wipe >/dev/null 2>&1")
         
         # Clear DB for this instance only
         db().execute("delete from processes where instance = '{}'".format(self.instance.name))
         
-        print((bcolors.RED + "Instance {} has been safely stopped." + bcolors.ENDC).format(self.instance.name))
+        print((bcolors.RED + "Instance {} and its engine have been hard-killed." + bcolors.ENDC).format(self.instance.name))
 
 
     def stop_process_name(self, name):
@@ -226,9 +227,10 @@ class process_handler:
         pr = db().select("processes", {"instance": self.instance.name, "name": name})
         
         if len(pr) == 0:
-            # Fallback for the engine if it's not in the DB
-            if name == "OpenJK":
+            # Fallback: If it's the engine, force kill it by screen name pattern
+            if name == "OpenJK" or name == "mbiided":
                 screen_name = "mb2_{}".format(self.instance.name)
+                os.system("pkill -9 -f 'screen.*-S {}.*mbiided'".format(screen_name))
                 os.system("screen -S {} -X quit >/dev/null 2>&1".format(screen_name))
             return False
         
