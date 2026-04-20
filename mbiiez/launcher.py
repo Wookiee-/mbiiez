@@ -71,7 +71,14 @@ class launcher:
                     "MBII", 
                     self.config['server']['server_config_file']
                 )       
-                process = subprocess.Popen(shlex.split(cmd), shell=False)  # ,stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL   
+                env = os.environ.copy()
+                _ld_path = "/usr/lib/i386-linux-gnu/libjemalloc.so.2"
+                if 'LD_PRELOAD' in env:
+                    if _ld_path not in env['LD_PRELOAD']:
+                        env['LD_PRELOAD'] = _ld_path + ":" + env['LD_PRELOAD']
+                else:
+                    env['LD_PRELOAD'] = _ld_path
+                process = subprocess.Popen(shlex.split(cmd), shell=False, env=env)  # ,stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL   
                 pid = process.pid
                 self.process_handler.add_pid("OpenJK", pid, self.instance_name)
                 print(pid)
@@ -91,7 +98,15 @@ class launcher:
         
         cmd = "python /home/mbiiez/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
 
-        subprocess.check_call(shlex.split(cmd),stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+        env = os.environ.copy()
+        _ld_path = "/usr/lib/i386-linux-gnu/libjemalloc.so.2"
+        if 'LD_PRELOAD' in env:
+            if _ld_path not in env['LD_PRELOAD']:
+                env['LD_PRELOAD'] = _ld_path + ":" + env['LD_PRELOAD']
+        else:
+            env['LD_PRELOAD'] = _ld_path
+
+        subprocess.check_call(shlex.split(cmd),stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, env=env)
 
         return
        

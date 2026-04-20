@@ -83,7 +83,14 @@ class process_handler:
             if not supervised:
                 # Launch once and move on (Fire & Forget)
                 log = open(std_out_file, 'a')
-                process = subprocess.Popen(shlex.split(func), shell=False, stdin=log, stdout=log, stderr=log) 
+                env = os.environ.copy()
+                _ld_path = "/usr/lib/i386-linux-gnu/libjemalloc.so.2"
+                if 'LD_PRELOAD' in env:
+                    if _ld_path not in env['LD_PRELOAD']:
+                        env['LD_PRELOAD'] = _ld_path + ":" + env['LD_PRELOAD']
+                else:
+                    env['LD_PRELOAD'] = _ld_path
+                process = subprocess.Popen(shlex.split(func), shell=False, stdin=log, stdout=log, stderr=log, env=env) 
                 db().insert("processes", {"name": name, "pid": process.pid, "instance": instance})
                 return
 
@@ -118,7 +125,14 @@ class process_handler:
                         if os.path.exists(std_out_file):
                             os.remove(std_out_file)
                         log = open(std_out_file, 'a')
-                        process = subprocess.Popen(shlex.split(func), shell=False, stdin=log, stdout=log, stderr=log) 
+                        env = os.environ.copy()
+                        _ld_path = "/usr/lib/i386-linux-gnu/libjemalloc.so.2"
+                        if 'LD_PRELOAD' in env:
+                            if _ld_path not in env['LD_PRELOAD']:
+                                env['LD_PRELOAD'] = _ld_path + ":" + env['LD_PRELOAD']
+                        else:
+                            env['LD_PRELOAD'] = _ld_path
+                        process = subprocess.Popen(shlex.split(func), shell=False, stdin=log, stdout=log, stderr=log, env=env) 
                         db().insert("processes", {"name": name, "pid": process.pid, "instance": instance}) 
                         time.sleep(1)
                         if(crashes > 0):

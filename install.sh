@@ -13,7 +13,7 @@ cd $SCRIPTPATH
 install_dependencies() {
     sudo dpkg --add-architecture i386
     sudo apt-get update
-    sudo apt-get install -y libc6:i386 lib32z1 libstdc++6:i386 libcurl4t64:i386 
+    sudo apt-get install -y libc6:i386 lib32z1 libstdc++6:i386 libcurl4t64:i386 libjemalloc2:i386
 }
 
 install_python_tools() {
