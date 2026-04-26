@@ -73,6 +73,8 @@ class launcher:
                 )       
                 env = os.environ.copy()
                 _ld_path = "/usr/lib/i386-linux-gnu/libjemalloc.so.2"
+                env['MALLOC_CONF'] = "narenas:1,tcache:false,dirty_decay_ms:0,muzzy_decay_ms:0"
+
                 if 'LD_PRELOAD' in env:
                     if _ld_path not in env['LD_PRELOAD']:
                         env['LD_PRELOAD'] = _ld_path + ":" + env['LD_PRELOAD']
