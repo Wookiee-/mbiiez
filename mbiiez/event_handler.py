@@ -1,9 +1,11 @@
 from mbiiez.bcolors import bcolors
 from mbiiez.process import process
 from mbiiez.db import db
+from mbiiez.platform import IS_WINDOWS
 import os
 import datetime
 import time
+import subprocess
 
 class event_handler:
 
@@ -37,18 +39,23 @@ class event_handler:
         
         restart_hours = self.instance.config['server']['restart_instance_every_hours']
         
-        while(True):
+        while True:
             self.instance.log_handler.log("Next Scheduled Restart will be at ")
             time.sleep(restart_hours * 60 * 60)
             self.instance.log_handler.log("Attempting Scheduled Restart")
             
             # If Server is not empty when due to restart, then check every minute
-            while(not self.instance.is_empty()):
+            while not self.instance.is_empty():
                 self.instance.log_handler.log("Server not empty, restart postponed..")
                 time.sleep(600)
                 
             # Does the restart    
-            os.popen("mbii -i {} restart".format(self.instance.name))    
+            if IS_WINDOWS:
+                # Windows: use mbii.bat if available
+                subprocess.call(f'mbii -i {self.instance.name} restart', shell=True)
+            else:
+                # Linux: use mbii (shell command)
+                subprocess.call(f'mbii -i {self.instance.name} restart', shell=True)    
         
 
     # Internal Events

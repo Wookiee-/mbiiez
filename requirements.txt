@@ -1,0 +1,17 @@
+# MBIIEZ - Movie Battles II Enhanced Server Management
+# Python dependencies
+
+# Core dependencies
+watchgod>=0.4          # Auto-reload for development
+psutil>=5.9.0          # Cross-platform process and system utilities (required for Windows support)
+prettytable>=3.0.0     # Pretty-print tables for CLI output
+six>=1.16.0            # Python 2/3 compatibility utilities
+tailer>=0.4            # Tail file follower (log watching)
+urllib3>=1.26.0        # HTTP library (for IP info service)
+
+# Web interface (optional, only needed if using the web dashboard)
+flask>=2.0.0           # Web framework
+flask-socketio>=5.0.0  # WebSocket support for real-time updates
+
+# Development dependencies
+# pytest>=7.0.0         # Unit testing (uncomment if adding tests)

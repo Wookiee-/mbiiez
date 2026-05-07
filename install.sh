@@ -13,13 +13,15 @@ cd $SCRIPTPATH
 install_dependencies() {
     sudo dpkg --add-architecture i386
     sudo apt-get update
-    sudo apt-get install -y libc6:i386 lib32z1 libstdc++6:i386 libcurl4t64:i386 libjemalloc2:i386
+    sudo apt-get install -y libc6:i386 lib32z1 libstdc++6:i386 libcurl4t64:i386 libjemalloc2:i386 sqlite3
 }
 
 install_python_tools() {
     sudo apt-get update
     sudo apt-get install -y net-tools fping python3 python3-pip unzip
-    pip3 install --user watchgod tailer six psutil PTable ConfigParser flask flask_httpauth discord.py prettytable --break-system-packages
+    pip3 install --user watchgod tailer six psutil prettytable urllib3 flask flask_httpauth flask-socketio discord.py --break-system-packages
+    
+    # Note: psutil is required for Windows compatibility support
 }
 
 setup_pyenv() {

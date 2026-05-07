@@ -19,7 +19,13 @@
                 ],
                 "repeat_minutes":5
         },
-        "stats":{}
+        "stats":{},
+        "rtvrtm":{},
+        "vpn_monitor":{
+            "enabled":true,
+            "iphub_api_key":"YOUR_IPHUB_API_KEY",
+            "uncertain_block":false
+        }
   },
   "security":{
     "rcon_password":"[CHOOSE AN RCON PASSWORD]",

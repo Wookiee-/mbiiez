@@ -22,6 +22,7 @@ from mbiiez.event_handler import event_handler
 from mbiiez.plugin_handler import plugin_handler
 from mbiiez.models import chatter, log
 from mbiiez import settings
+from mbiiez.platform import IS_WINDOWS, IS_LINUX, get_log_path, process_exists, kill_process_on_port
 
 # An Instance of MBII                        
 class instance:
@@ -44,6 +45,9 @@ class instance:
     def __init__(self, name):
     
         self.name = name
+
+        # Get MBIIDir path from settings
+        self.mbiidir = os.path.expanduser(settings.locations.base_path)
 
         # Safe IP fetching
         self.external_ip = "127.0.0.1"       
@@ -82,37 +86,40 @@ class instance:
         
         ''' Add any configs to external plugins if they are enabled '''    
         ''' if(self.has_plugin("auto_message")):
-            self.config['plugins']['auto_message']['messages'].append("This server is powered by MBIIEZ, visit bit.ly/2JhJRpO") '''   
-
-    def services_internal(self):
-        ''' Internal Services we wish to start on an instance start ''' 
+            self.config['plugins']['auto_message']['messages'].append("This server is powered by MBIIEZ, visit bit.ly/2JhJRpO") '''    def services_internal(self):
+        ''' Internal Services we wish to start on an instance start '''
 
         screen_name = "mb2_{}".format(self.name)
         
-        # We use screen -dmS so it manages itself in the background
-        cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
-            screen_name,
-            self.config['server']['engine'], 
-            self.config['server']['port'], 
-            self.get_game(), 
-            self.config['server']['server_config_file']
-        )
+        # Build command - screen is Linux-only
+        if IS_WINDOWS:
+            cmd = "{} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
+                self.config['server']['engine'],
+                self.config['server']['port'],
+                self.get_game(),
+                self.config['server']['server_config_file']
+            )
+        else:
+            cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
+                screen_name,
+                self.config['server']['engine'],
+                self.config['server']['port'],
+                self.get_game(),
+                self.config['server']['server_config_file']
+            )
         
         self.start_cmd = cmd
         
         # Register with supervised=False (the 5th argument)
         self.process_handler.register_service("OpenJK", cmd, 1, None, False)
         
-        ''' Log Watcher Service ''' 
+        ''' Log Watcher Service '''
         self.process_handler.register_service("Log Watcher", self.log_handler.log_watcher)
         
         ''' Restarter Service '''
         self.process_handler.register_service("Scheduled Restarter", self.event_handler.restarter)
 
-        ''' RTV Service, Eventually move to a plugin ''' 
-        if(self.config['server']['enable_rtv']):
-            cmd = "python /home/mbiiez/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
-            self.process_handler.register_service("RTVRTM", cmd, 999, self.log_handler.log_await) 
+        ''' RTV/RTM is now handled by the plugin system (plugin_rtvrtm.py) '''
             
     def events_internal(self):
         ''' Events we wish to run internal methods on '''
@@ -129,34 +136,52 @@ class instance:
     # Use netstat to get the port used by this instance
     def get_port(self):  
         port = 0
-        response =  os.system("netstat -tulpn | grep {}".format(settings.dedicated.engine))
-        for item in response.splitlines():
-            if settings.dedicated.engine in item:
-                port = item.split()[3].split(":")[1];   
+        if IS_WINDOWS:
+            # Windows: use netstat with findstr
+            response = os.popen('netstat -ano | findstr LISTENING').read()
+            for item in response.splitlines():
+                if settings.dedicated.engine in item:
+                    parts = item.split()
+                    if len(parts) > 1:
+                        port = parts[1].split(':')[-1]
+                        break
+        else:
+            # Linux: use netstat with grep
+            response = os.popen("netstat -tulpn | grep {}".format(settings.dedicated.engine)).read()
+            for item in response.splitlines():
+                if settings.dedicated.engine in item:
+                    port = item.split()[3].split(":")[-1]
+                    break
 
-        if(int(port) > 0):
-            return str(port)  
+        if int(port) > 0:
+            return str(port)
 
         return None  
 
     # Is RTV / RTM Service running and instance
     def get_rtv_status(self):  
-    
-        response =  os.system("ps ax | grep {}".format("rtvrtm.py"))
-        for item in response.splitlines():
-            if("rtvrtm" in item):
-                return(True) 
-                
-        return False  
-
-    # Is the chosen engine running an instance
-    def get_ded_engine_status(self):  
-
-        response =  os.system('ps ax | grep {}'.format(settings.dedicated.engine))
-        for item in response.splitlines():
-            if(settings.dedicated.engine in item):
-                return(True) 
-                
+        if IS_WINDOWS:
+            # Windows: use tasklist
+            response = os.popen('tasklist /FI "IMAGENAME eq python*"').read()
+            return 'rtvrtm' in response.lower()
+        else:
+            # Linux: use ps
+            response = os.popen("ps ax | grep rtvrtm.py").read()
+            for item in response.splitlines():
+                if 'rtvrtm' in item and 'grep' not in item:
+                    return True
+        return False    # Is the chosen engine running an instance
+    def get_ded_engine_status(self):
+        if IS_WINDOWS:
+            # Windows: use tasklist
+            response = os.popen('tasklist').read()
+            return settings.dedicated.engine in response
+        else:
+            # Linux: use ps
+            response = os.popen("ps ax | grep {}".format(settings.dedicated.engine)).read()
+            for item in response.splitlines():
+                if settings.dedicated.engine in item and 'grep' not in item:
+                    return True
         return False  
 
     # Run an RCON command
@@ -226,14 +251,28 @@ class instance:
 
     # Server uptime as a string
     def uptime(self):
-
-        uptime = "unknown"      
-        result = subprocess.run(['ps', 'aux'], stdout=subprocess.PIPE)
-        output = str(result.stdout.decode())
+        uptime = "unknown"
         
-        for item in output.splitlines():
-            if(self.config['server']['server_config_file'] in item):
-                uptime = (item.split()[9])      
+        if IS_WINDOWS:
+            # Windows: use wmic or tasklist
+            import psutil
+            for proc in psutil.process_iter():
+                try:
+                    if settings.dedicated.engine in proc.name().lower():
+                        uptime = proc.create_time()
+                        uptime = str(int((time.time() - uptime) / 60)) + "m"
+                        break
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+        else:
+            # Linux: use ps aux
+            result = subprocess.run(['ps', 'aux'], stdout=subprocess.PIPE)
+            output = str(result.stdout.decode())
+            
+            for item in output.splitlines():
+                if self.config['server']['server_config_file'] in item:
+                    uptime = (item.split()[9])
+                    break
 
         return uptime 
  
@@ -319,7 +358,7 @@ class instance:
          
     # Start this instance
     def start(self):
-    
+        
         self.stop()
         time.sleep(1)
         
@@ -330,34 +369,39 @@ class instance:
         self.conf.generate_rtvrtm_config()
         self.conf.generate_rtvrtm_map_lists()
         
-        if(self.server_running()):
+        if self.server_running():
              print(bcolors.OK + "Instance is already running" + bcolors.ENDC)
-             return;
+             return
         
         # Can Instance Can Start?
-        if(os.path.exists(self.config['server']['server_config_path'])): 
+        if os.path.exists(self.config['server']['server_config_path']): 
 
             # Reason to Bail  
-            if(not os.path.isfile("{}/{}".format("/usr/bin", self.config['server']['engine']))):        
-                self.log_handler.log(bcolors.RED + "Failed to start. No engine found at {}/{}".format("/usr/bin", self.config['server']['engine']) + bcolors.ENDC)   
-                print(bcolors.FAIL + "[Error] " + bcolors.ENDC + "Failed to start. No engine found at {}/{}".format("/usr/bin", self.config['server']['engine']))
-                exit()
+            if IS_WINDOWS:
+                # Windows: check if engine exists
+                if not os.path.isfile(self.config['server']['engine']):
+                    self.log_handler.log(bcolors.RED + "Failed to start. No engine found at {}".format(self.config['server']['engine']) + bcolors.ENDC)
+                    print(bcolors.FAIL + "[Error] " + bcolors.ENDC + "Failed to start. No engine found at {}".format(self.config['server']['engine']))
+                    exit()
+            else:
+                # Linux: check if engine exists in /usr/bin
+                if not os.path.isfile("{}/{}".format("/usr/bin", self.config['server']['engine'])):
+                    self.log_handler.log(bcolors.RED + "Failed to start. No engine found at {}/{}".format("/usr/bin", self.config['server']['engine']) + bcolors.ENDC)
+                    print(bcolors.FAIL + "[Error] " + bcolors.ENDC + "Failed to start. No engine found at {}/{}".format("/usr/bin", self.config['server']['engine']))
+                    exit()
                 
-            # Make sure can be executed    
-            # os.system("chmod +x {}/{}".format("/usr/bin", self.config['server']['engine']))  
-              
-            # Sym Links
-            if(os.path.exists("/home/mbiiez/.local/share/openjk")):
-                if(not os.path.islink("/home/mbiiez/.local/share/openjk")):
-                    shutil.rmtree("/home/mbiiez/.local/share/openjk")       
-                    os.symlink(settings.locations.game_path, "/home/mbiiez/.local/share/openjk")
-            
-            if(os.path.exists("$/home/mbiiez/.ja")):
-                if(not os.path.islink("/home/mbiiez/.ja")):
-                    shutil.rmtree("/home/mbiiez/.ja")       
-                    os.symlink(settings.locations.game_path, "/home/mbiiez/.ja")  
+            # Linux: Create sym links
+            if not IS_WINDOWS:
+                if os.path.exists("/home/mbiiez/.local/share/openjk"):
+                    if not os.path.islink("/home/mbiiez/.local/share/openjk"):
+                        shutil.rmtree("/home/mbiiez/.local/share/openjk")
+                        os.symlink(settings.locations.game_path, "/home/mbiiez/.local/share/openjk")
+                
+                if os.path.exists("/home/mbiiez/.ja"):
+                    if not os.path.islink("/home/mbiiez/.ja"):
+                        shutil.rmtree("/home/mbiiez/.ja")
+                        os.symlink(settings.locations.game_path, "/home/mbiiez/.ja")
         
-                           
             self.event_handler.run_event("before_launch_server")
             self.process_handler.launch_services()
      
@@ -374,12 +418,9 @@ class instance:
             return False
                 
     def rtv_running(self):
-        result = subprocess.run(['ps', 'ax'], stdout=subprocess.PIPE)
-        output = str(result.stdout.decode())
-        for item in output.splitlines():
-            if(self.config['server']['rtvrtm_config_file'] in item):
-                return True
-        
+        # RTV is now handled by the plugin system
+        return self.has_plugin('rtvrtm')
+
     def has_plugin(self, plugin_name):
     
         if(plugin_name in self.config['plugins']):

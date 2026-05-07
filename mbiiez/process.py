@@ -1,6 +1,8 @@
 import os
 import psutil
 
+from mbiiez.platform import IS_WINDOWS, process_exists, kill_process
+
 class process:
 
     # Return a PID contained in a given file
@@ -35,31 +37,28 @@ class process:
             return True
         else:
             os.remove(pid_file)     
-            return False
-
-    # Is a PID  running
-    def pid_is_running(self,pid):
-        try:
-             os.kill(pid, 0)
-             return True
-             
-        except OSError:           
-            return False
+            return False    # Is a PID  running
+    def pid_is_running(self, pid):
+        return process_exists(pid)
                   
     # Return PID of process by name      
     def find_process_by_name(self, search):
         for p in psutil.process_iter(attrs=["pid", "name", "cmdline"]):
             try:
-                if(search in p.info["cmdline"]):
+                if p.info["cmdline"] and search in ' '.join(p.info["cmdline"]):
                     return p.pid
 
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                return 0
-        return 0    
+                pass
+        return 0
      
     # Kill process by name
     def kill_process_by_name(self, search):
-        cmd = "ps aux | grep -ie " + search + " | awk '{print $2}' | xargs kill -15"
-        os.system(cmd)   
+        if IS_WINDOWS:
+            # Windows: use taskkill
+            os.system(f'taskkill /F /IM {search}.exe >nul 2>&1')
+        else:
+            # Linux: use pkill
+            os.system(f'pkill -15 -f "{search}"')   
         
         

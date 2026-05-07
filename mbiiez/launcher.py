@@ -13,6 +13,7 @@ from mbiiez.conf import conf
 from mbiiez import settings
 from mbiiez.log_handler import log_handler
 from mbiiez.process_handler import process_handler
+from mbiiez.platform import IS_WINDOWS, IS_LINUX, get_env_with_preload, get_log_path
 
 class launcher: 
 
@@ -49,38 +50,44 @@ class launcher:
             self.log_handler.log("Starting Service: " + service['name'])
             self.process_handler.start(service['func'], service['name'], self.instance_name)
             
-    # Dedicated Server Thread
-    def openjk_launch(self):   
-      
-        while(True):
+    # Dedicated Server Thread    def openjk_launch(self):   
+        
+        while True:
             print("Checking OpenJK Dedicated...")
             
-            if(self.process_handler.process_status("OpenJK")):
+            if self.process_handler.process_status_name("OpenJK"):
                 print("running")
             else:
                 print("not running")
             
-            while(not self.process_handler.process_status("OpenJK")): 
+            while not self.process_handler.process_status_name("OpenJK"): 
                 print("Starting OpenJK Dedicated...")
                 self.log_handler.log("Starting OpenJK Dedicated Server")
-                screen_name = "mb2_{}".format(self.instance_name)
-                cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
-                    screen_name,
-                    self.config['server']['engine'], 
-                    self.config['server']['port'], 
-                    "MBII", 
-                    self.config['server']['server_config_file']
-                )       
-                env = os.environ.copy()
-                _ld_path = "/usr/lib/i386-linux-gnu/libjemalloc.so.2"
-                env['MALLOC_CONF'] = "narenas:1,tcache:false,dirty_decay_ms:0,muzzy_decay_ms:0"
-
-                if 'LD_PRELOAD' in env:
-                    if _ld_path not in env['LD_PRELOAD']:
-                        env['LD_PRELOAD'] = _ld_path + ":" + env['LD_PRELOAD']
+                
+                # Build command - screen is Linux-only
+                if IS_WINDOWS:
+                    cmd = "{} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
+                        self.config['server']['engine'],
+                        self.config['server']['port'],
+                        "MBII",
+                        self.config['server']['server_config_file']
+                    )
                 else:
-                    env['LD_PRELOAD'] = _ld_path
-                process = subprocess.Popen(shlex.split(cmd), shell=False, env=env)  # ,stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL   
+                    screen_name = "mb2_{}".format(self.instance_name)
+                    cmd = "screen -dmS {} {} --quiet +set dedicated 2 +set net_port {} +set fs_game {} +exec {}".format(
+                        screen_name,
+                        self.config['server']['engine'], 
+                        self.config['server']['port'],
+                        "MBII", 
+                        self.config['server']['server_config_file']
+                    )
+                
+                env = get_env_with_preload()
+                if IS_LINUX:
+                    # jemalloc memory optimization settings for Linux
+                    env['MALLOC_CONF'] = "narenas:1,tcache:false,dirty_decay_ms:0,muzzy_decay_ms:0"
+                
+                process = subprocess.Popen(shlex.split(cmd), shell=False, env=env)
                 pid = process.pid
                 self.process_handler.add_pid("OpenJK", pid, self.instance_name)
                 print(pid)
@@ -88,28 +95,10 @@ class launcher:
             time.sleep(3)
         return
         
-    # KILL THIS
+    # KILL THIS - RTV/RTM is now handled by plugin_system
     def launch_rtv_thread(self):
- 
-        x = 0
- 
-        self.log_handler.log("Launching RTV/RTM Instance...")
-        
-        # Wait for the log file to become available
-        self.log_handler.log_await()
-        
-        cmd = "python /home/mbiiez/openjk/rtvrtm.py -c {}".format(self.config['server']['rtvrtm_config_path']) 
-
-        env = os.environ.copy()
-        _ld_path = "/usr/lib/i386-linux-gnu/libjemalloc.so.2"
-        if 'LD_PRELOAD' in env:
-            if _ld_path not in env['LD_PRELOAD']:
-                env['LD_PRELOAD'] = _ld_path + ":" + env['LD_PRELOAD']
-        else:
-            env['LD_PRELOAD'] = _ld_path
-
-        subprocess.check_call(shlex.split(cmd),stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, env=env)
-
+        # This method is deprecated - RTV/RTM is now handled by the plugin system
+        self.log_handler.log("RTV/RTM is now handled by the plugin system")
         return
        
     # Dedicated Server Thread
