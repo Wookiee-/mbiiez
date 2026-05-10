@@ -614,7 +614,7 @@ class plugin:
             all_maps.extend(list(secondary))
         
         if not all_maps:
-            self.instance.say('^2[Voting] ^7Map voting is unavailable.')
+            self.instance.console.console('^2[Voting] ^7Map voting is unavailable.')
             return
             
         current_map = self.current_map or ''
@@ -641,10 +641,10 @@ class plugin:
         page_maps = available_maps[start_idx:end_idx]
         
         if total_pages > 1:
-            self.instance.say('^2[Maplist %i] ^7%s' % (page, ', '.join(page_maps)))
-            self.instance.say('^2[Maplist] ^7Page %i of %i' % (page, total_pages))
+            self.instance.console.console('^2[Maplist %i] ^7%s' % (page, ', '.join(page_maps)))
+            self.instance.console.console('^2[Maplist] ^7Page %i of %i' % (page, total_pages))
         else:
-            self.instance.say('^2[Maplist] ^7%s' % ', '.join(page_maps))
+            self.instance.console.console('^2[Maplist] ^7%s' % ', '.join(page_maps))
 
     def handle_search(self, player_id, expression):
         """Search maps by expression"""
@@ -655,11 +655,11 @@ class plugin:
             all_maps.extend(list(secondary))
         
         if not all_maps:
-            self.instance.say('^2[Voting] ^7Map voting is unavailable.')
+            self.instance.console.console('^2[Voting] ^7Map voting is unavailable.')
             return
             
         if not expression:
-            self.instance.say('^2[Search] ^7Usage: !search expression')
+            self.instance.console.console('^2[Search] ^7Usage: !search expression')
             return
         
         current_map = self.current_map or ''
@@ -672,7 +672,7 @@ class plugin:
         results = [m for m in available_maps if search_expr in m.lower()]
         
         if not results:
-            self.instance.say('^2[Search] ^7No matches found for expression \'%s\'.' % expression)
+            self.instance.console.console('^2[Search] ^7No matches found for expression \'%s\'.' % expression)
             return
             
         results.sort(key=lambda x: x.lower())
@@ -680,9 +680,9 @@ class plugin:
         
         # Check if result is too long (similar to MAPLIST_MAX_SIZE)
         if len(result_str) > 750:
-            self.instance.say('^2[Search] ^7Result for expression \'%s\' is too long.' % expression)
+            self.instance.console.console('^2[Search] ^7Result for expression \'%s\' is too long.' % expression)
         else:
-            self.instance.say('^2[Search] ^7%s' % result_str)
+            self.instance.console.console('^2[Search] ^7%s' % result_str)
 
     def handle_vote_digit(self, player_id, player_name, vote_number):
         """Handle voting with digits during active voting"""
