@@ -259,10 +259,9 @@ class plugin:
         required = max(int(total_players * self.rtv_rate / 100), self.rtv_min_votes)
         current = len(self.rtv_votes)
         
-        self.instance.tell(player_id, '^3Your RTV vote has been counted. ^1%i^3/^1%i^3 votes needed' % (current, required))
-        self.instance.say('^2[RTV] ^1%i^2 RTV votes, ^1%i^2 needed to rock the vote' % (current, required))
+        # Broadcast who wants to rock the vote (like original rtvrtm.py)
+        self.instance.say('^2[RTV] ^7%s ^7wants to rock the vote (%i/%i).' % (player_name, current, required))
 
-        
         # Check if enough votes to start voting
         if current >= required:
 
