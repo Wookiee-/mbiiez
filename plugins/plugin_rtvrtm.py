@@ -666,11 +666,13 @@ class plugin:
         if self.current_voting_type == 'rtv':
             if winning_value == 'dontchange':
                 self.instance.say('^3[RTV] ^7Voting failed - majority chose to stay.')
+                self.rtv_votes = {}
             else:
                 self.execute_rtv_with_map(winning_value)
         elif self.current_voting_type == 'rtm':
             if winning_value == 'dontchange':
                 self.instance.say('^3[RTM] ^7Voting failed - majority chose to stay.')
+                self.rtm_votes = {}
             else:
                 self.execute_rtm(int(winning_value))
         
