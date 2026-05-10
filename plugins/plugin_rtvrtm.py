@@ -344,10 +344,11 @@ class plugin:
         current = len(self.rtm_votes)
         
         mode_name = self.modes.get(mode, 'Unknown')
-        self.instance.tell(player_id, '^3Your RTM vote for ^1' + mode_name + '^3 has been counted. ^1' + str(current) + '^3/^1' + str(required) + '^3 votes needed')
         
-        # Announce to all players
-        self.instance.say('^2[RTM] ^1' + str(current) + '^2 RTM votes for ^1' + mode_name + '^2, ^1' + str(required) + '^2 needed')        # Check if enough votes - start RTM voting (like RTV)
+        # Broadcast who wants to rock the mode (like original rtvrtm.py)
+        self.instance.say('^2[RTM] ^7%s ^7wants to rock the mode (%i/%i).' % (player_name, current, required))
+
+        # Check if enough votes - start RTM voting (like RTV)
         if current >= required:
             self.start_rtm_voting()
 
