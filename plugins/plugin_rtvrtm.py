@@ -287,7 +287,7 @@ class plugin:
             # Get maps sorted by nomination count (highest first), then priority
             map_choices = [m for m, c in counts.most_common(5)]
         
-        # Debug output
+        # Debug output to server log
         self.instance.log_handler.log('[RTV_DEBUG] map_choices count: %d, nominated_maps: %s' % (len(map_choices), str(nominated_maps)))
         
         # Create voting options from map choices (like original rtvrtm.py)
@@ -305,6 +305,8 @@ class plugin:
         # Debug
         self.instance.log_handler.log('[RTV_DEBUG] votes_display: %s' % votes_display)
         
+        # Broadcast voting start with map choices (like original rtvrtm.py)
+        self.instance.say('^2[RTV] ^7Voting starting with ^1%i ^7map choices!' % len(map_choices))
         self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
         self.instance.say('^2[Votes] ^7' + votes_display)
         
