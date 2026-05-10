@@ -80,10 +80,8 @@ class plugin:
         self.maps = instance.config.get('primary_maps', [])
         self.secondary_maps = instance.config.get('secondary_maps', [])
         
-        # Debug: Log what's in config at root level
-        instance.log_handler.log('[RTV/RTM] Config keys: ' + str(list(instance.config.keys())[:10]))
-        instance.log_handler.log('[RTV/RTM] primary_maps found: ' + str(len(self.maps)) + ' maps')
-        instance.log_handler.log('[RTV/RTM] secondary_maps found: ' + str(len(self.secondary_maps)) + ' maps')
+        # Debug: Show in-game so user can see
+        instance.say('^2[RTV/RTM] ^7Config loaded - primary_maps: ^1' + str(len(self.maps)) + '^7, secondary_maps: ^1' + str(len(self.secondary_maps)))
         
         # Mode definitions
         self.modes = {
