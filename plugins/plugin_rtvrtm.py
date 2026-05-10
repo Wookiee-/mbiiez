@@ -92,8 +92,8 @@ class plugin:
     def register(self):
         """Register event handlers"""
         self.instance.event_handler.register_event('player_chat_command', self.on_player_chat_command)
-        self.instance.event_handler.register_event('player_connects', self.on_player_connects)
-        self.instance.event_handler.register_event('player_disconnects', self.on_player_disconnects)
+        self.instance.event_handler.register_event('player_connected', self.on_player_connects)
+        self.instance.event_handler.register_event('player_disconnected', self.on_player_disconnects)
         self.instance.event_handler.register_event('map_change', self.on_map_change)
         self.instance.event_handler.register_event('new_log_line', self.on_new_log_line)
         
