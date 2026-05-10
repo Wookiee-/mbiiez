@@ -316,7 +316,7 @@ class plugin:
         self.voting_options[len(map_choices) + 1] = {'count': 0, 'priority': 0, 'value': None, 'display': "Don't change"}
         
         # Build votes_display string
-        votes_display = ', '.join('%i(%i): %s' % (i, 0, m) for i, m in enumerate(map_choices, 1))
+        votes_display = ', '.join('%i(%i): ^2%s^7' % (i, 0, m) for i, m in enumerate(map_choices, 1))
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
         # Broadcast voting messages
@@ -403,7 +403,7 @@ class plugin:
         self.voting_options[len(mode_choices) + 1] = {'count': 0, 'priority': 0, 'value': None, 'display': "Don't change"}
         
         # Announce voting with mode choices - match original rtvrtm.py format
-        votes_display = ', '.join('%i(%i): %s' % (i, 0, self.modes.get(m, str(m))) for i, m in enumerate(mode_choices, 1))
+        votes_display = ', '.join('%i(%i): ^2%s^7' % (i, 0, self.modes.get(m, str(m))) for i, m in enumerate(mode_choices, 1))
         votes_display += ', %i(0): Don\'t change' % (len(mode_choices) + 1)
         # Broadcast voting messages using rcon directly (like original rtvrtm.py)
         self.instance.say('^2[RTM] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
