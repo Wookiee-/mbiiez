@@ -291,26 +291,25 @@ class plugin:
         # Get all available maps (primary + secondary)
         all_maps = list(self.maps) + list(self.secondary_maps if self.secondary_maps else [])
         
-        # Debug: show raw map lists
-        self.instance.say('^2[RTV] ^7DEBUG: self.maps = ^1' + str(self.maps))
-        self.instance.say('^2[RTV] ^7DEBUG: self.secondary_maps = ^1' + str(self.secondary_maps))
-        self.instance.say('^2[RTV] ^7DEBUG: all_maps = ^1' + str(all_maps))
-        self.instance.say('^2[RTV] ^7DEBUG: recently_played = ^1' + str(self.recently_played))
-        
         # If no nominations, get random maps from available
         if not nominated_maps:
-            available = [m for m in all_maps if m not in self.recently_played] or all_maps
-            self.instance.say('^2[RTV] ^7Selecting ^1' + str(min(5, len(available))) + '^7 random maps from ^1' + str(len(available)) + '^7 available')
-            map_choices = random.sample(available, min(5, len(available)))
-            self.instance.say('^2[RTV] ^7Selected: ^1' + ', '.join(map_choices))
+            available = [m for m in all_maps if m not in self.recently_played]
+            if not available:
+                available = all_maps
+            if not available:
+                self.instance.say('^1[RTV] ^7ERROR: No maps available for voting!')
+                self.voting_active = False
+                return
+            # Select random maps - must have at least 1 available
+            num_to_select = min(5, len(available))
+            map_choices = random.sample(available, num_to_select)
         else:
             # Count nominations and get top maps
             from collections import Counter
             counts = Counter(nominated_maps)
-            # Get maps sorted by nomination count (highest first), then priority
             map_choices = [m for m, c in counts.most_common(5)]
         
-        # Create voting options from map choices (like original rtvrtm.py)
+        # Create voting options from map choices
         self.voting_options = {}
         for i, map_name in enumerate(map_choices, 1):
             self.voting_options[i] = {'count': 0, 'priority': 0, 'value': map_name, 'display': map_name}
@@ -318,19 +317,13 @@ class plugin:
         # Add "Don't change" option
         self.voting_options[len(map_choices) + 1] = {'count': 0, 'priority': 0, 'value': None, 'display': "Don't change"}
         
-        # Announce voting with map choices - match original rtvrtm.py format
+        # Build votes_display string
         votes_display = ', '.join('%i(%i): %s' % (i, 0, m) for i, m in enumerate(map_choices, 1))
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
-        # Debug: show what votes_display looks like
-        self.instance.say('^2[RTV] ^7DEBUG votes_display: ^1' + votes_display)
-        
-        # Broadcast voting messages using rcon directly (like original rtvrtm.py)
+        # Broadcast voting messages
         self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
         self.instance.say('^2[Votes] ^7' + votes_display)
-        
-        # Show map counts for debugging
-        self.instance.say('^2[RTV] ^7Maps loaded: ^1' + str(len(all_maps)) + ' ^7(primary: ^1' + str(len(self.maps)) + '^7, secondary: ^1' + str(len(self.secondary_maps or [])) + '^7)')
         
         self.voting_start_time = time.time()
         self.players_voted = {}
