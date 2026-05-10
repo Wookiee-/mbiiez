@@ -703,9 +703,10 @@ class plugin:
         
         if self.current_voting_type == 'rtv':
             if winning_value is None:
-                # "Don't change" option won
+                # "Don't change" option won - stay on current map, clear nominations
                 self.instance.say('^2[RTV] ^7Voting complete - majority chose to keep current map.')
                 self.rtv_votes = {}
+                self._clear_nominations()
             else:
                 # Map change wins - use the voted-on map
                 self.instance.say('^2[RTV] ^7Voting complete - ^1%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
@@ -713,9 +714,10 @@ class plugin:
                     self.queue_rtv_change(winning_value)
                 else:
                     self.execute_rtv_immediate(winning_value)
+                self._clear_nominations()
         elif self.current_voting_type == 'rtm':
             if winning_value is None:
-                # "Don't change" option won
+                # "Don't change" option won - stay on current mode, clear RTM votes
                 self.instance.say('^2[RTM] ^7Voting complete - majority chose to keep current mode.')
                 self.rtm_votes = {}
             else:
@@ -730,6 +732,7 @@ class plugin:
         self.voting_active = False
         self.voting_options = {}
         self.players_voted = {}
+        self.nomination_order = []
     
     def queue_rtv_change(self, map_name):
         """Queue RTV change for next round - uses the voted-on map"""
