@@ -322,7 +322,6 @@ class plugin:
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
         # Broadcast voting messages
-        self.instance.say('^2[RTV] ^7Maps loaded: ^1' + str(len(all_maps)) + ' ^7(primary: ^1' + str(len(self.maps)) + '^7, secondary: ^1' + str(len(self.secondary_maps or [])) + '^7)')
         self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (^2%i^7/^2%s^7).' % (0, total_players))
         self.instance.say('^2[Votes] ^7' + votes_display)
         
