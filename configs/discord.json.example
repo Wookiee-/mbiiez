@@ -22,7 +22,9 @@
         "rtv_rate":50,
         "rtv_min_votes":10,
         "rtm_rate":50,
-        "rtm_min_votes":20
+        "rtm_min_votes":20,
+        "rtv_queued":true,
+        "rtm_queued":true
     },
         "discord_bot":{
 		"token": "[IF WANTING TO USE A DISCORD BOT, ADD YOUR TOKEN HERE]",
