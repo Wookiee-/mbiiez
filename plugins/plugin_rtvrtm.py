@@ -603,7 +603,7 @@ class plugin:
         for idx, chunk in enumerate(chunks, 1):
             self.instance.console.csay('^2[RTV] ^7%i/%i: %s' % (idx, len(chunks), ', '.join(chunk)))
         
-        self.instance.console.csay('^2[RTV] ^7Total: ^1%i ^7maps available for nomination' % total)
+        self.instance.console.csay('^2[RTV] ^7Total: ^2%i ^7maps available for nomination' % total)
 
     def handle_maplist(self, player_id, page):
         """Show map list with pagination"""
