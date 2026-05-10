@@ -31,9 +31,6 @@ class conf:
             
                 data['server']['name'] = self.name
                     
-                data['server']['rtvrtm_config_file'] = "{}-rtvrtm.cfg".format(self.name)
-                data['server']['rtvrtm_config_path'] = "{}/{}".format(self.mbii_path, data['server']['rtvrtm_config_file'])
-                
                 data['server']['server_config_file'] = "{}-server.cfg".format(self.name) 
                 data['server']['server_config_path'] = "{}/{}".format(self.mbii_path, data['server']['server_config_file'])
                 
@@ -220,7 +217,7 @@ class conf:
     #                 data = data.replace("[rtv_mode]", "1")
     #             else:
     #                 data = data.replace("[rtv_mode]","0")  
-    #         f = open(self.config['server']['rtvrtm_config_path'], "w")
+    #         f.write(data)
     #         f.write(data)
     #         f.close()
     #         time.sleep(0.3)
