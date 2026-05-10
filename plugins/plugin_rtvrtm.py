@@ -240,11 +240,11 @@ class plugin:
         current_time = time.time()
         if current_time - self.last_vote_time < self.vote_cooldown:
             remaining = int(self.vote_cooldown - (current_time - self.last_vote_time))
-            self.instance.tell(player_id, '^3RTV vote is in cooldown. Try again in ^1%i^3 seconds' % remaining)
+            self.instance.say('^2[RTV] ^7Rock the vote is temporarily disabled. Time remaining: %i seconds' % remaining)
             return
             
         if self.voting_active:
-            self.instance.tell(player_id, '^2[Voting] ^7A voting is already in progress.')
+            self.instance.say('^2[RTV] ^7Rock the vote is temporarily disabled.')
             return
             
         total_players = len(self.players)
@@ -315,7 +315,7 @@ class plugin:
         current_time = time.time()
         if current_time - self.last_vote_time < self.vote_cooldown:
             remaining = int(self.vote_cooldown - (current_time - self.last_vote_time))
-            self.instance.tell(player_id, '^3RTM vote is in cooldown. Try again in ^1' + str(remaining) + '^3 seconds')
+            self.instance.say('^2[RTM] ^7Rock the mode is temporarily disabled. Time remaining: %i seconds' % remaining)
             return
             
         total_players = len(self.players)
