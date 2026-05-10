@@ -284,7 +284,7 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
 - **Nominations (RTV):** Before or after initiating, players can nominate maps with `!nominate <map>` or `!nom <map>`. Use `!maplist` or `!search <expression>` to see available maps.
 - **Mode Requests (RTM):** When using `!rtm <mode>`, the mode is recorded. Modes: 0=Open, 1=Semi, 2=Full, 3=Duel, 4=Legends
 - **Voting Phase:** When threshold is reached, voting starts with map/mode choices:
-  - RTV shows map choices from nominations (or random maps if none nominated)
+  - RTV shows map choices from nominations (falls back to random maps if none nominated)
   - RTM shows mode choices from RTM votes
   - Players vote with `!1`, `!2`, etc. to pick their preferred option
   - "Don't change" option is always available
