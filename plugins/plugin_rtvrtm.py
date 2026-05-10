@@ -785,7 +785,7 @@ class plugin:
                 self._clear_nominations()
             else:
                 # Map change wins - use the voted-on map
-                self.instance.say('^2[RTV] ^7%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
+                self.instance.say('^2[RTV] ^7%s ^7wins with ^2%i ^7votes!' % (winning_display, max_votes))
                 if self.rtv_queued:
                     self.queue_rtv_change(winning_value)
                 else:
@@ -798,7 +798,7 @@ class plugin:
                 self.rtm_votes = {}
             else:
                 # Mode change wins - use the voted-on mode
-                self.instance.say('^2[RTM] ^7%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
+                self.instance.say('^2[RTM] ^7%s ^7wins with ^2%i ^7votes!' % (winning_display, max_votes))
                 if self.rtm_queued:
                     self.queue_rtm_change(winning_value)
                 else:
