@@ -295,15 +295,8 @@ class plugin:
         
         # If no nominations, get random maps from available
         if not nominated_maps:
-            available = [m for m in all_maps if m not in self.recently_played]
-            if not available:
-                available = all_maps
-            if not available:
-                self.instance.say('^1[RTV] ^7No maps available for voting!')
-                self.voting_active = False
-                return
-            num_to_select = min(5, len(available))
-            map_choices = random.sample(available, num_to_select)
+            available = [m for m in all_maps if m not in self.recently_played] or all_maps
+            map_choices = random.sample(available, min(5, len(available)))
         else:
             from collections import Counter
             counts = Counter(nominated_maps)
