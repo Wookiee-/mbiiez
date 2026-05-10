@@ -400,8 +400,8 @@ class my_plugin:
 | `new_log_line` | `log_line` | Every new log entry |
 | `player_chat_command` | `message, player, player_id` | Chat starting with `!` |
 | `player_chat` | `type, message, player, player_id` | All chat (TEAM/PUBLIC) |
-| `player_connects` | `player, player_id` | Player connects |
-| `player_disconnects` | `player, player_id` | Player disconnects |
+| `player_connected` | `player, player_id` | Player connects |
+| `player_disconnected` | `player, player_id` | Player disconnects |
 | `player_killed` | `fragger_id, fragger, fragged_id, fragged, weapon` | Player killed |
 | `player_begin` | `player, player_id` | Player enters map |
 | `map_change` | `current_map, new_map` | Map changes |
