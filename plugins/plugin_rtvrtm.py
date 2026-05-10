@@ -177,7 +177,7 @@ class plugin:
         # Vote with digit (during active voting)
         if self.voting_active and message.startswith('!') and len(message) == 2 and message[1].isdigit():
             vote_num = int(message[1])
-            self.handle_vote_digit(player_id, vote_num)
+            self.handle_vote_digit(player_id, player_name, vote_num)
             return
         
     def on_player_connects(self, args):
@@ -282,8 +282,6 @@ class plugin:
     
     def start_rtv_voting(self):
         """Start RTV voting process - show map choices from nominations"""
-        self.instance.say('^3[RTV] ^7VOTING STARTED!')  # Signal voting is happening
-        
         self.voting_active = True
         self.current_voting_type = 'rtv'
         
@@ -294,7 +292,6 @@ class plugin:
         
         # Get all available maps (primary + secondary)
         all_maps = list(self.maps) + list(self.secondary_maps if self.secondary_maps else [])
-        self.instance.say('^3[RTV] ^7All maps: ^1' + str(len(all_maps)))
         
         # If no nominations, get random maps from available
         if not nominated_maps:
@@ -302,7 +299,7 @@ class plugin:
             if not available:
                 available = all_maps
             if not available:
-                self.instance.say('^1[RTV] ^7ERROR: No maps available!')
+                self.instance.say('^1[RTV] ^7No maps available for voting!')
                 self.voting_active = False
                 return
             num_to_select = min(5, len(available))
@@ -311,8 +308,6 @@ class plugin:
             from collections import Counter
             counts = Counter(nominated_maps)
             map_choices = [m for m, c in counts.most_common(5)]
-        
-        self.instance.say('^3[RTV] ^7Map choices: ^1' + str(len(map_choices)))
         
         # Create voting options from map choices
         self.voting_options = {}
@@ -327,8 +322,8 @@ class plugin:
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
         # Broadcast voting messages
+        self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
         self.instance.say('^2[Votes] ^7' + votes_display)
-        self.instance.say('^2[RTV] ^7Type !1-^2' + str(len(map_choices) + 1) + ' ^7to vote')
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -651,7 +646,7 @@ class plugin:
         else:
             self.instance.say('^2[Search] ^7%s' % result_str)
 
-    def handle_vote_digit(self, player_id, vote_number):
+    def handle_vote_digit(self, player_id, player_name, vote_number):
         """Handle voting with digits during active voting"""
         if not self.voting_active:
             return
@@ -670,7 +665,7 @@ class plugin:
         self.voting_options[vote_number]['count'] += 1
         
         # Announce vote
-        self.instance.say('^2[Voting] ^7Player ^1%s ^7voted for ^1%s' % (player_id, self.voting_options[vote_number]['display']))
+        self.instance.say('^2[Voting] ^7%s ^1voted for ^1%s' % (player_name, self.voting_options[vote_number]['display']))
         
         # Update voting message with current counts using rcon directly (like original rtvrtm.py)
         total_players = len(self.players)
