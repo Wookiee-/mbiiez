@@ -284,7 +284,7 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
 - When threshold is reached, a Yes/No vote starts (`!1` = Yes, `!2` = No)
 - If Yes wins and `rtv_queued`/`rtm_queued` is `true`: change happens at next map change (round end)
 - If Yes wins and `rtv_queued`/`rtm_queued` is `false`: change happens immediately
-- RTV changes to the most nominated map; RTM changes to the most requested mode
+- RTV changes to the most nominated map (or random if no nominations); RTM changes to the most requested mode
 
 #### Auto Message Plugin
 ```json
