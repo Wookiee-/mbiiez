@@ -166,6 +166,11 @@ class plugin:
             self.handle_search(player_id, expression)
             return
         
+        # Debug command to check map loading
+        if message == '!rtvdebug':
+            self.instance.say('^2[RTV] ^7Maps: ^1' + str(len(self.maps)) + '^7 Secondary: ^1' + str(len(self.secondary_maps)) + '^7 Nominations: ^1' + str(len([p[3] for p in self.players.values() if p[3]])))
+            return
+        
         # Unvote command (during active voting)
         if message == '!unvote':
             self.handle_unvote(player_id, player_name)
