@@ -95,12 +95,6 @@ class launcher:
             time.sleep(3)
         return
         
-    # KILL THIS - RTV/RTM is now handled by plugin_system
-    def launch_rtv_thread(self):
-        # This method is deprecated - RTV/RTM is now handled by the plugin system
-        self.log_handler.log("RTV/RTM is now handled by the plugin system")
-        return
-       
     # Dedicated Server Thread
  
     # KILL THIS  
@@ -132,38 +126,14 @@ class launcher:
     
         self.process_handler.start(self.launch_dedicated_server_thread, self.name_dedicated, self.instance_name)
 
-    # Backwards compatibility - RTV/RTM is now handled by plugin system
-    def launch_rtv(self):
-        # RTV/RTM is now handled by the plugin system - just log and return
-        self.log_handler.log("RTV/RTM is now handled by the plugin system (plugins/plugin_rtvrtm.py)")
-        
-        # Check if RTV/RTM is enabled in plugins.rtvrtm config
-        rtv_enabled = self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv', False)
-        rtm_enabled = self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtm', False)
-        
-        if rtv_enabled:
-            self.log_handler.log("[RTV/RTM] RTV is enabled")
-        if rtm_enabled:
-            self.log_handler.log("[RTV/RTM] RTM is enabled")
-        
-        return
-
+    # RTV/RTM is now handled by the plugin system (plugin_rtvrtm.py)
     def launch_rtvrtm(self):
-        """Launch the RTVRTM plugin - now handled by plugin system"""
-        self.log_handler.log("Starting RTV/RTM Plugin via plugin system")
-        
-        # Check plugins.rtvrtm config for enable flags
+        """Log RTV/RTM plugin status - now handled by plugin system"""
         rtv_enabled = self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv', False)
         rtm_enabled = self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtm', False)
-        
-        # Check if plugin config exists
         plugin_configured = self.config.get('plugins', {}).get('rtvrtm') is not None
         
         if rtv_enabled or rtm_enabled:
-            self.log_handler.log("[RTV/RTM] Plugin is enabled (RTV: {}, RTM: {})".format(rtv_enabled, rtm_enabled))
-            if plugin_configured:
-                self.log_handler.log("[RTV/RTM] Plugin config found, will be loaded by plugin_handler")
+            self.log_handler.log("[RTV/RTM] Plugin enabled via plugin system (RTV: {}, RTM: {})".format(rtv_enabled, rtm_enabled))
         else:
-            self.log_handler.log("[RTV/RTM] RTV/RTM is disabled in plugins config")
-        
-        return
+            self.log_handler.log("[RTV/RTM] Disabled in plugins config")
