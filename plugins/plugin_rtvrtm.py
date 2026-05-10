@@ -601,8 +601,7 @@ class plugin:
         self.voting_options[old_vote]['count'] -= 1
         del self.players_voted[player_id]
         
-        self.instance.say('^2[Voting] ^7%s ^7removed their vote.' % (
-            self.players.get(player_id, {}).get('name', 'Player')))
+        self.instance.say('^2[Voting] ^7%s ^7removed their vote.' % player_name)
     
     def check_voting_end(self):
         """Check if voting should end and execute result"""
