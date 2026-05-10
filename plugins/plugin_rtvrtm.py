@@ -234,7 +234,7 @@ class plugin:
 
         
         if not self.rtv_enabled:
-            self.instance.tell(player_id, '^1RTV is currently disabled')
+            self.instance.say('^1RTV is currently disabled')
             return
             
         current_time = time.time()
@@ -280,7 +280,7 @@ class plugin:
         all_maps = list(self.maps) + list(self.secondary_maps if self.secondary_maps else [])
         
         # Show map count in-game so user can see what's happening
-        self.instance.console.rcon('svsay ^2[RTV] ^7Maps loaded: ^1' + str(len(all_maps)) + ' ^7(primary: ^1' + str(len(self.maps)) + '^7, secondary: ^1' + str(len(self.secondary_maps or [])) + '^7)')
+        self.instance.say('^2[RTV] ^7Maps loaded: ^1' + str(len(all_maps)) + ' ^7(primary: ^1' + str(len(self.maps)) + '^7, secondary: ^1' + str(len(self.secondary_maps or [])) + '^7)')
         
         # If no nominations, get random maps from available
         if not nominated_maps:
@@ -306,8 +306,8 @@ class plugin:
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
         # Broadcast voting messages using rcon directly (like original rtvrtm.py)
-        self.instance.console.rcon('svsay ^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
-        self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
+        self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
+        self.instance.say('^2[Votes] ^7' + votes_display)
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -316,7 +316,7 @@ class plugin:
     def handle_rtm_vote(self, player_id, player_name, message=''):
         """Handle RTM vote"""
         if not self.rtm_enabled:
-            self.instance.tell(player_id, '^1RTM is currently disabled')
+            self.instance.say('^1RTM is currently disabled')
             return
             
         # Check cooldown
@@ -337,10 +337,10 @@ class plugin:
             try:
                 mode = int(parts[1])
                 if mode not in self.modes:
-                    self.instance.tell(player_id, '^1Invalid mode. Valid modes: 0-Open, 1-Semi, 2-Full, 3-Duel, 4-Legends')
+                    self.instance.say('^1Invalid mode. Valid modes: 0-Open, 1-Semi, 2-Full, 3-Duel, 4-Legends')
                     return
             except ValueError:
-                self.instance.tell(player_id, '^1Usage: !rtm <mode 0-4> or !rtm for Open mode')
+                self.instance.say('^1Usage: !rtm <mode 0-4> or !rtm for Open mode')
                 return
         
         # Add vote
@@ -390,8 +390,8 @@ class plugin:
         votes_display = ', '.join('%i(%i): %s' % (i, 0, self.modes.get(m, str(m))) for i, m in enumerate(mode_choices, 1))
         votes_display += ', %i(0): Don\'t change' % (len(mode_choices) + 1)
         # Broadcast voting messages using rcon directly (like original rtvrtm.py)
-        self.instance.console.rcon('svsay ^2[RTM] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
-        self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
+        self.instance.say('^2[RTM] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
+        self.instance.say('^2[Votes] ^7' + votes_display)
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -412,13 +412,13 @@ class plugin:
     def handle_nomination(self, player_id, player_name, map_name):
         """Handle map nomination"""
         if not self.maps:
-            self.instance.tell(player_id, '^2[Voting] ^7Map voting is unavailable.')
+            self.instance.say('^2[Voting] ^7Map voting is unavailable.')
             return
             
         # Check if nomination is allowed (only when >5 maps total)
         total_maps = len(self.maps) + len(self.secondary_maps if self.secondary_maps else [])
         if total_maps <= 5:
-            self.instance.tell(player_id, '^2[Nominate] ^7Map nomination is unavailable because the number of maps is less than or equal 5.')
+            self.instance.say('^2[Nominate] ^7Map nomination is unavailable because the number of maps is less than or equal 5.')
             return
             
         if not map_name:
@@ -428,9 +428,9 @@ class plugin:
                 available = [m for m in self.secondary_maps if m not in self.recently_played]
             if available:
                 available = sorted(available, key=lambda x: x.lower())[:10]
-                self.instance.tell(player_id, '^2[Nominate] ^7%s' % ', '.join(available))
+                self.instance.say('^2[Nominate] ^7%s' % ', '.join(available))
             else:
-                self.instance.tell(player_id, '^2[Nominate] ^7No maps available for nomination.')
+                self.instance.say('^2[Nominate] ^7No maps available for nomination.')
             return
             
         # Check if map exists
@@ -442,18 +442,18 @@ class plugin:
                 break
                 
         if not compare_map:
-            self.instance.tell(player_id, '^2[Nominate] ^7Invalid map. Please use <!>maplist or <!>search expression.')
+            self.instance.say('^2[Nominate] ^7Invalid map. Please use <!>maplist or <!>search expression.')
             return
             
         if compare_map.lower() == self.current_map.lower():
-            self.instance.tell(player_id, '^2[Nominate] ^7%s cannot be nominated (current map).' % compare_map)
+            self.instance.say('^2[Nominate] ^7%s cannot be nominated (current map).' % compare_map)
             return
             
         # Check recently played
         current_time = time.time()
         if compare_map in self.recently_played_dict and self.recently_played_dict.get(compare_map, 0) > current_time:
             remaining = int(self.recently_played_dict[compare_map] - current_time)
-            self.instance.tell(player_id, '^2[Nominate] ^7%s cannot be nominated (recently played) (%s left).' %
+            self.instance.say('^2[Nominate] ^7%s cannot be nominated (recently played) (%s left).' %
                 (compare_map, self.format_time(remaining)))
             return
         
@@ -464,7 +464,7 @@ class plugin:
                 old_nomination = self.players[player_id][3]
                 if old_nomination == compare_map:
                     nominations = sum(1 for p in self.players.values() if p[3] == compare_map)
-                    self.instance.tell(player_id, '^2[Nominate] ^7%s ^7already nominated %s (%i nomination%s).' %
+                    self.instance.say('^2[Nominate] ^7%s ^7already nominated %s (%i nomination%s).' %
                         (player_name, compare_map, nominations, '' if nominations == 1 else 's'))
                     return
                 else:
@@ -485,15 +485,15 @@ class plugin:
         else:  # Simple nominations - max 5 total
             nominated_maps = [p[3] for p in self.players.values() if p[3]]
             if compare_map in nominated_maps:
-                self.instance.tell(player_id, '^2[Nominate] ^7%s cannot be nominated (already nominated).' % compare_map)
+                self.instance.say('^2[Nominate] ^7%s cannot be nominated (already nominated).' % compare_map)
                 return
                 
             if len(nominated_maps) >= 5:
-                self.instance.tell(player_id, '^2[Nominate] ^7Maximum number of nominations (5) reached.')
+                self.instance.say('^2[Nominate] ^7Maximum number of nominations (5) reached.')
                 return
                 
             if player_id in self.players and self.players[player_id][3]:
-                self.instance.tell(player_id, '^2[Nominate] ^7%s ^7already nominated %s.' % (player_name, self.players[player_id][3]))
+                self.instance.say('^2[Nominate] ^7%s ^7already nominated %s.' % (player_name, self.players[player_id][3]))
                 return
                 
             self.players[player_id][3] = compare_map
@@ -523,16 +523,16 @@ class plugin:
         status += '^1RTV: ^3' + str(rtv_count) + '/' + str(rtv_required) + ' needed\n'
         status += '^1RTM: ^3' + str(rtm_count) + '/' + str(rtm_required) + ' needed'
         
-        self.instance.tell(player_id, status)
+        self.instance.say(status)
 
     def handle_unrtv(self, player_id, player_name):
         """Handle unRTV - remove RTV vote"""
         if not self.rtv_enabled:
-            self.instance.tell(player_id, '^1RTV is currently disabled')
+            self.instance.say('^1RTV is currently disabled')
             return
             
         if player_id not in self.rtv_votes:
-            self.instance.tell(player_id, '^2[RTV] ^7%s ^7didn\'t want to rock the vote yet (%i/%i).' %
+            self.instance.say('^2[RTV] ^7%s ^7didn\'t want to rock the vote yet (%i/%i).' %
                 (player_name, len(self.rtv_votes), max(int(len(self.players) * self.rtv_rate / 100), self.rtv_min_votes)))
             return
             
@@ -543,11 +543,11 @@ class plugin:
     def handle_unrtm(self, player_id, player_name):
         """Handle unRTM - remove RTM vote"""
         if not self.rtm_enabled:
-            self.instance.tell(player_id, '^1RTM is currently disabled')
+            self.instance.say('^1RTM is currently disabled')
             return
             
         if player_id not in self.rtm_votes:
-            self.instance.tell(player_id, '^2[RTM] ^7%s ^7didn\'t want to rock the mode yet (%i/%i).' %
+            self.instance.say('^2[RTM] ^7%s ^7didn\'t want to rock the mode yet (%i/%i).' %
                 (player_name, len(self.rtm_votes), max(int(len(self.players) * self.rtm_rate / 100), self.rtm_min_votes)))
             return
             
@@ -558,7 +558,7 @@ class plugin:
     def handle_maplist(self, player_id, page):
         """Show map list with pagination"""
         if not self.maps:
-            self.instance.tell(player_id, '^2[Voting] ^7Map voting is unavailable.')
+            self.instance.say('^2[Voting] ^7Map voting is unavailable.')
             return
             
         # Combine maps and secondary maps
@@ -575,7 +575,7 @@ class plugin:
         ]
         
         if not available_maps:
-            self.instance.tell(player_id, '^2[Maplist] ^7No map is currently available for nomination.')
+            self.instance.say('^2[Maplist] ^7No map is currently available for nomination.')
             return
             
         # Sort maps
@@ -591,19 +591,19 @@ class plugin:
         page_maps = available_maps[start_idx:end_idx]
         
         if total_pages > 1:
-            self.instance.tell(player_id, '^2[Maplist %i] ^7%s' % (page, ', '.join(page_maps)))
-            self.instance.tell(player_id, '^2[Maplist] ^7Page %i of %i' % (page, total_pages))
+            self.instance.say('^2[Maplist %i] ^7%s' % (page, ', '.join(page_maps)))
+            self.instance.say('^2[Maplist] ^7Page %i of %i' % (page, total_pages))
         else:
-            self.instance.tell(player_id, '^2[Maplist] ^7%s' % ', '.join(page_maps))
+            self.instance.say('^2[Maplist] ^7%s' % ', '.join(page_maps))
 
     def handle_search(self, player_id, expression):
         """Search maps by expression"""
         if not self.maps:
-            self.instance.tell(player_id, '^2[Voting] ^7Map voting is unavailable.')
+            self.instance.say('^2[Voting] ^7Map voting is unavailable.')
             return
             
         if not expression:
-            self.instance.tell(player_id, '^2[Search] ^7Usage: !search expression')
+            self.instance.say('^2[Search] ^7Usage: !search expression')
             return
             
         # Combine maps and search
@@ -618,7 +618,7 @@ class plugin:
         results = [m for m in available_maps if search_expr in m.lower()]
         
         if not results:
-            self.instance.tell(player_id, '^2[Search] ^7No matches found for expression \'%s\'.' % expression)
+            self.instance.say('^2[Search] ^7No matches found for expression \'%s\'.' % expression)
             return
             
         results.sort(key=lambda x: x.lower())
@@ -626,9 +626,9 @@ class plugin:
         
         # Check if result is too long (similar to MAPLIST_MAX_SIZE)
         if len(result_str) > 750:
-            self.instance.tell(player_id, '^2[Search] ^7Result for expression \'%s\' is too long.' % expression)
+            self.instance.say('^2[Search] ^7Result for expression \'%s\' is too long.' % expression)
         else:
-            self.instance.tell(player_id, '^2[Search] ^7%s' % result_str)
+            self.instance.say('^2[Search] ^7%s' % result_str)
 
     def handle_vote_digit(self, player_id, vote_number):
         """Handle voting with digits during active voting"""
@@ -636,7 +636,7 @@ class plugin:
             return
         
         if vote_number not in self.voting_options:
-            self.instance.tell(player_id, '^2[Voting] ^7Invalid vote option. Use ^1!1^7-^1!%i' % len(self.voting_options))
+            self.instance.say('^2[Voting] ^7Invalid vote option. Use ^1!1^7-^1!%i' % len(self.voting_options))
             return
         
         # Check if already voted
@@ -660,9 +660,9 @@ class plugin:
         # Send voting countdown message
         if voted_count < total_players:
             rounds_left = total_players - voted_count
-            self.instance.console.rcon('svsay ^2[%s] ^7Type !number to vote. Voting will complete in ^2%d ^7round%s (%i/%i).' % 
+            self.instance.say('^2[%s] ^7Type !number to vote. Voting will complete in ^2%d ^7round%s (%i/%i).' % 
                                       (voting_name, rounds_left, 's' if rounds_left != 1 else '', voted_count, total_players))
-        self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
+        self.instance.say('^2[Votes] ^7' + votes_display)
         
         # Check if voting should end (all players voted or time expired)
         self.check_voting_end()
@@ -670,11 +670,11 @@ class plugin:
     def handle_unvote(self, player_id, player_name):
         """Handle unvote - remove vote during active voting"""
         if not self.voting_active:
-            self.instance.tell(player_id, '^2[Voting] ^7No voting is currently in progress.')
+            self.instance.say('^2[Voting] ^7No voting is currently in progress.')
             return
         
         if player_id not in self.players_voted:
-            self.instance.tell(player_id, '^2[Voting] ^7You haven\'t voted yet.')
+            self.instance.say('^2[Voting] ^7You haven\'t voted yet.')
             return
         
         old_vote = self.players_voted[player_id]
@@ -704,9 +704,9 @@ class plugin:
                 voting_name = self.current_voting_type.upper()
                 votes_display = ', '.join('%i(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
                                           for opt_num, opt_data in sorted(self.voting_options.items()))
-                self.instance.console.rcon('svsay ^2[%s] ^7Type !number to vote. Voting will complete in ^21 ^7round (%i/%i).' % 
+                self.instance.say('^2[%s] ^7Type !number to vote. Voting will complete in ^21 ^7round (%i/%i).' % 
                                           (voting_name, voted_count, total_players))
-                self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
+                self.instance.say('^2[Votes] ^7' + votes_display)
             return
         
         # Find winning option (like original rtvrtm.py)
@@ -723,12 +723,12 @@ class plugin:
         if self.current_voting_type == 'rtv':
             if winning_value is None:
                 # "Don't change" option won - stay on current map, clear nominations
-                self.instance.console.rcon('svsay ^2[RTV] ^7Voting complete - majority chose to keep current map.')
+                self.instance.say('^2[RTV] ^7Voting complete - majority chose to keep current map.')
                 self.rtv_votes = {}
                 self._clear_nominations()
             else:
                 # Map change wins - use the voted-on map
-                self.instance.console.rcon('svsay ^2[RTV] ^7%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
+                self.instance.say('^2[RTV] ^7%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
                 if self.rtv_queued:
                     self.queue_rtv_change(winning_value)
                 else:
@@ -737,11 +737,11 @@ class plugin:
         elif self.current_voting_type == 'rtm':
             if winning_value is None:
                 # "Don't change" option won - stay on current mode, clear RTM votes
-                self.instance.console.rcon('svsay ^2[RTM] ^7Voting complete - majority chose to keep current mode.')
+                self.instance.say('^2[RTM] ^7Voting complete - majority chose to keep current mode.')
                 self.rtm_votes = {}
             else:
                 # Mode change wins - use the voted-on mode
-                self.instance.console.rcon('svsay ^2[RTM] ^7%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
+                self.instance.say('^2[RTM] ^7%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
                 if self.rtm_queued:
                     self.queue_rtm_change(winning_value)
                 else:
@@ -758,7 +758,7 @@ class plugin:
         self.pending_change = {'type': 'map', 'value': map_name}
         self.rtv_votes = {}  # Clear votes
         
-        self.instance.console.rcon('svsay ^2[RTV] ^7Changing map to ^2%s ^7next round.' % map_name)
+        self.instance.say('^2[RTV] ^7Changing map to ^2%s ^7next round.' % map_name)
         self.instance.log_handler.log('[RTV] Vote successful - Queued map change to ' + map_name + ' for next round')
     
     def queue_rtm_change(self, mode):
@@ -767,14 +767,14 @@ class plugin:
         self.pending_change = {'type': 'mode', 'value': mode}
         self.rtm_votes = {}  # Clear votes
         
-        self.instance.console.rcon('svsay ^2[RTM] ^7Changing mode to ^2%s ^7next round.' % mode_name)
+        self.instance.say('^2[RTM] ^7Changing mode to ^2%s ^7next round.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Queued mode change to ' + mode_name + ' for next round')
     
     def execute_rtv_immediate(self, map_name):
         """Execute RTV change immediately - uses the voted-on map"""
         self.rtv_votes = {}  # Clear votes
         self.instance.map(map_name)
-        self.instance.console.rcon('svsay ^2[RTV] ^7Map changed to ^2%s.' % map_name)
+        self.instance.say('^2[RTV] ^7Map changed to ^2%s.' % map_name)
         self.instance.log_handler.log('[RTV] Vote successful - Changed map to ' + map_name)
     
     def execute_rtm_immediate(self, mode):
@@ -782,7 +782,7 @@ class plugin:
         mode_name = self.modes.get(mode, 'Unknown')
         self.rtm_votes = {}  # Clear votes
         self.instance.mode(mode)
-        self.instance.console.rcon('svsay ^2[RTM] ^7Mode changed to ^2%s.' % mode_name)
+        self.instance.say('^2[RTM] ^7Mode changed to ^2%s.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Changed mode to ' + mode_name)
     
     def before_dedicated_server_launch(self):
