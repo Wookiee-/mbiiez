@@ -249,8 +249,7 @@ class plugin:
             
         total_players = len(self.players)
         if total_players == 0:
-            self.instance.tell(player_id, '^1No players on server')
-            return
+            return  # Silent reject - no players to vote
             
         # Add vote
         self.rtv_votes[player_id] = {'name': player_name}
@@ -320,8 +319,7 @@ class plugin:
             
         total_players = len(self.players)
         if total_players == 0:
-            self.instance.tell(player_id, '^1No players on server')
-            return
+            return  # Silent reject - no players to vote
             
         # Parse mode from message if provided (e.g., !rtm 1 for Semi-Authentic)
         mode = 0  # Default to Open mode
