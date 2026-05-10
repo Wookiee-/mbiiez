@@ -319,6 +319,9 @@ class plugin:
         votes_display = ', '.join('%i(%i): %s' % (i, 0, m) for i, m in enumerate(map_choices, 1))
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
+        # Debug: show what votes_display looks like
+        self.instance.say('^2[RTV] ^7DEBUG votes_display: ^1' + votes_display)
+        
         # Broadcast voting messages using rcon directly (like original rtvrtm.py)
         self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
         self.instance.say('^2[Votes] ^7' + votes_display)
