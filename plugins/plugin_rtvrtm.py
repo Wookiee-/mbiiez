@@ -198,7 +198,7 @@ class plugin:
         if self.pending_change:
             if self.pending_change['type'] == 'map':
                 map_name = self.pending_change['value']
-                self.instance.say('^3[RTV] ^1Rock the Vote ^3executing! Changing to ^2' + map_name)
+                self.instance.say('^2[RTV] ^1Rock the Vote ^3executing! Changing to ^2' + map_name)
                 self.instance.log_handler.log('[RTV] Executing queued map change to ' + map_name)
                 # Map change already in progress - don't call instance.map() again
                 # Just update recently_played
@@ -209,7 +209,7 @@ class plugin:
             elif self.pending_change['type'] == 'mode':
                 mode = self.pending_change['value']
                 mode_name = self.modes.get(mode, 'Unknown')
-                self.instance.say('^3[RTM] ^1Rock the Mode ^3executing! Changing to ^2' + mode_name)
+                self.instance.say('^2[RTM] ^1Rock the Mode ^3executing! Changing to ^2' + mode_name)
                 self.instance.log_handler.log('[RTM] Executing queued mode change to ' + mode_name)
                 self.instance.mode(mode)  # Mode change still needed
             self.pending_change = None
@@ -273,14 +273,17 @@ class plugin:
         self.voting_active = True
         self.current_voting_type = 'rtv'
         
+        total_players = len(self.players)
+        
         # Simple Yes/No voting options
         self.voting_options = {
             1: {'count': 0, 'priority': 0, 'value': 'yes', 'display': 'Yes'},
             2: {'count': 0, 'priority': 0, 'value': 'no', 'display': 'No'}
         }
         
-        # Announce voting
-        self.instance.say('^3[RTV] ^7Voting started! Cast your vote: ^1!1^7 for Yes, ^1!2^7 for No')
+        # Announce voting - match original rtvrtm.py format
+        self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
+        self.instance.say('^2[Votes] ^71(0): Yes, 2(0): No')
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -336,14 +339,17 @@ class plugin:
         self.voting_active = True
         self.current_voting_type = 'rtm'
         
+        total_players = len(self.players)
+        
         # Simple Yes/No voting options
         self.voting_options = {
             1: {'count': 0, 'priority': 0, 'value': 'yes', 'display': 'Yes'},
             2: {'count': 0, 'priority': 0, 'value': 'no', 'display': 'No'}
         }
         
-        # Announce voting
-        self.instance.say('^3[RTM] ^7Voting started! Cast your vote: ^1!1^7 for Yes, ^1!2^7 for No')
+        # Announce voting - match original rtvrtm.py format
+        self.instance.say('^2[RTM] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
+        self.instance.say('^2[Votes] ^71(0): Yes, 2(0): No')
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -354,7 +360,7 @@ class plugin:
         self.rtm_votes = {}  # Clear votes after execution
         
         mode_name = self.modes.get(mode, 'Unknown')
-        self.instance.say('^3[RTM] ^1Rock the Mode ^3successful! Changing to ^2' + mode_name)
+        self.instance.say('^2[RTM] ^1Rock the Mode ^3successful! Changing to ^2' + mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Changing to mode ' + str(mode))
         
         # Change mode
@@ -601,7 +607,16 @@ class plugin:
         self.voting_options[vote_number]['count'] += 1
         
         # Announce vote
-        self.instance.say('^3[Voting] ^7Player ^1%s ^7voted for ^1%s' % (player_id, self.voting_options[vote_number]['display']))
+        self.instance.say('^2[Voting] ^7Player ^1%s ^7voted for ^1%s' % (player_id, self.voting_options[vote_number]['display']))
+        
+        # Update voting message with current counts (like original rtvrtm.py)
+        yes_votes = self.voting_options.get(1, {}).get('count', 0)
+        no_votes = self.voting_options.get(2, {}).get('count', 0)
+        total_players = len(self.players)
+        voted_count = len(self.players_voted)
+        voting_name = self.current_voting_type.upper()
+        self.instance.say('^2[%s] ^7Type !number to vote. Voting will complete in ^21^7 rounds (%i/%i).' % (voting_name, voted_count, total_players))
+        self.instance.say('^2[Votes] ^71(%i): Yes, 2(%i): No' % (yes_votes, no_votes))
         
         # Check if voting should end (all players voted or time expired)
         self.check_voting_end()
@@ -650,7 +665,7 @@ class plugin:
                 else:
                     self.execute_rtv_immediate()
             else:
-                self.instance.say('^3[RTV] ^7Voting failed - majority voted No.')
+                self.instance.say('^2[RTV] ^7Voting failed - majority voted No.')
                 self.rtv_votes = {}
         elif self.current_voting_type == 'rtm':
             if yes_votes > no_votes:
@@ -660,7 +675,7 @@ class plugin:
                 else:
                     self.execute_rtm_immediate()
             else:
-                self.instance.say('^3[RTM] ^7Voting failed - majority voted No.')
+                self.instance.say('^2[RTM] ^7Voting failed - majority voted No.')
                 self.rtm_votes = {}
         
         # End voting
@@ -692,7 +707,7 @@ class plugin:
         self.pending_change = {'type': 'map', 'value': map_name}
         self.rtv_votes = {}  # Clear votes
         
-        self.instance.say('^3[RTV] ^7Changing map to ^2%s ^7next round.' % map_name)
+        self.instance.say('^2[RTV] ^7Changing map to ^2%s ^7next round.' % map_name)
         self.instance.log_handler.log('[RTV] Vote successful - Queued map change to ' + map_name + ' for next round')
     
     def queue_rtm_change(self):
@@ -712,7 +727,7 @@ class plugin:
         self.pending_change = {'type': 'mode', 'value': mode}
         self.rtm_votes = {}  # Clear votes
         
-        self.instance.say('^3[RTM] ^7Changing mode to ^2%s ^7next round.' % mode_name)
+        self.instance.say('^2[RTM] ^7Changing mode to ^2%s ^7next round.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Queued mode change to ' + mode_name + ' for next round')
     
     def find_most_nominated_map(self):
@@ -751,7 +766,7 @@ class plugin:
         map_name = self.find_most_nominated_map()
         self.rtv_votes = {}  # Clear votes
         self.instance.map(map_name)
-        self.instance.say('^3[RTV] ^7Map changed to ^2%s.' % map_name)
+        self.instance.say('^2[RTV] ^7Map changed to ^2%s.' % map_name)
         self.instance.log_handler.log('[RTV] Vote successful - Changed map to ' + map_name)
     
     def execute_rtm_immediate(self):
@@ -760,7 +775,7 @@ class plugin:
         mode_name = self.modes.get(mode, 'Unknown')
         self.rtm_votes = {}  # Clear votes
         self.instance.mode(mode)
-        self.instance.say('^3[RTM] ^7Mode changed to ^2%s.' % mode_name)
+        self.instance.say('^2[RTM] ^7Mode changed to ^2%s.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Changed mode to ' + mode_name)
 
     def execute_rtv_immediate(self):
@@ -768,7 +783,7 @@ class plugin:
         map_name = self.find_most_nominated_map()
         self.rtv_votes = {}  # Clear votes
         self.instance.map(map_name)
-        self.instance.say('^3[RTV] ^7Map changed to ^2%s.' % map_name)
+        self.instance.say('^2[RTV] ^7Map changed to ^2%s.' % map_name)
         self.instance.log_handler.log('[RTV] Vote successful - Changed map to ' + map_name)
     
     def execute_rtm_immediate(self):
@@ -777,7 +792,7 @@ class plugin:
         mode_name = self.modes.get(mode, 'Unknown')
         self.rtm_votes = {}  # Clear votes
         self.instance.mode(mode)
-        self.instance.say('^3[RTM] ^7Mode changed to ^2%s.' % mode_name)
+        self.instance.say('^2[RTM] ^7Mode changed to ^2%s.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Changed mode to ' + mode_name)
     
     def before_dedicated_server_launch(self):
