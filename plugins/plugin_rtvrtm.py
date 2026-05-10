@@ -280,6 +280,8 @@ class plugin:
     
     def start_rtv_voting(self):
         """Start RTV voting process - show map choices from nominations"""
+        self.instance.say('^3[RTV] ^7VOTING STARTED!')  # Signal voting is happening
+        
         self.voting_active = True
         self.current_voting_type = 'rtv'
         
@@ -290,6 +292,7 @@ class plugin:
         
         # Get all available maps (primary + secondary)
         all_maps = list(self.maps) + list(self.secondary_maps if self.secondary_maps else [])
+        self.instance.say('^3[RTV] ^7All maps: ^1' + str(len(all_maps)))
         
         # If no nominations, get random maps from available
         if not nominated_maps:
@@ -297,17 +300,17 @@ class plugin:
             if not available:
                 available = all_maps
             if not available:
-                self.instance.say('^1[RTV] ^7ERROR: No maps available for voting!')
+                self.instance.say('^1[RTV] ^7ERROR: No maps available!')
                 self.voting_active = False
                 return
-            # Select random maps - must have at least 1 available
             num_to_select = min(5, len(available))
             map_choices = random.sample(available, num_to_select)
         else:
-            # Count nominations and get top maps
             from collections import Counter
             counts = Counter(nominated_maps)
             map_choices = [m for m, c in counts.most_common(5)]
+        
+        self.instance.say('^3[RTV] ^7Map choices: ^1' + str(len(map_choices)))
         
         # Create voting options from map choices
         self.voting_options = {}
@@ -322,8 +325,8 @@ class plugin:
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
         # Broadcast voting messages
-        self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
         self.instance.say('^2[Votes] ^7' + votes_display)
+        self.instance.say('^2[RTV] ^7Type !1-^2' + str(len(map_choices) + 1) + ' ^7to vote')
         
         self.voting_start_time = time.time()
         self.players_voted = {}
