@@ -84,9 +84,11 @@ class instance:
         #Load Plugins
         self.plugin_handler = plugin_handler(self)
         
-        ''' Add any configs to external plugins if they are enabled '''    
-        ''' if(self.has_plugin("auto_message")):
-            self.config['plugins']['auto_message']['messages'].append("This server is powered by MBIIEZ, visit bit.ly/2JhJRpO") '''    def services_internal(self):
+        # Add any configs to external plugins if they are enabled
+        # if(self.has_plugin("auto_message")):
+        #     self.config['plugins']['auto_message']['messages'].append("This server is powered by MBIIEZ, visit bit.ly/2JhJRpO")
+
+    def services_internal(self):
         ''' Internal Services we wish to start on an instance start '''
 
         screen_name = "mb2_{}".format(self.name)
