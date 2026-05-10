@@ -405,8 +405,8 @@ class instance:
                         os.symlink(settings.locations.game_path, "/home/mbiiez/.ja")
         
             self.event_handler.run_event("before_launch_server")
-            self.plugin_handler.launch_plugins()
             self.process_handler.launch_services()
+            self.plugin_handler.launch_plugins()
      
       
         else:
