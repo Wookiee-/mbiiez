@@ -260,7 +260,7 @@ class plugin:
         current = len(self.rtv_votes)
         
         self.instance.tell(player_id, '^3Your RTV vote has been counted. ^1%i^3/^1%i^3 votes needed' % (current, required))
-        self.instance.say('^3[RTV] ^1%i^3 RTV votes, ^1%i^3 needed to rock the vote' % (current, required))
+        self.instance.say('^2[RTV] ^1%i^2 RTV votes, ^1%i^2 needed to rock the vote' % (current, required))
 
         
         # Check if enough votes to start voting
@@ -348,7 +348,7 @@ class plugin:
         self.instance.tell(player_id, '^3Your RTM vote for ^1' + mode_name + '^3 has been counted. ^1' + str(current) + '^3/^1' + str(required) + '^3 votes needed')
         
         # Announce to all players
-        self.instance.say('^3[RTM] ^1' + str(current) + '^3 RTM votes for ^1' + mode_name + '^3, ^1' + str(required) + '^3 needed')        # Check if enough votes - start RTM voting (like RTV)
+        self.instance.say('^2[RTM] ^1' + str(current) + '^2 RTM votes for ^1' + mode_name + '^2, ^1' + str(required) + '^2 needed')        # Check if enough votes - start RTM voting (like RTV)
         if current >= required:
             self.start_rtm_voting()
 
