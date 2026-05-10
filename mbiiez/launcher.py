@@ -18,7 +18,6 @@ from mbiiez.platform import IS_WINDOWS, IS_LINUX, get_env_with_preload, get_log_
 class launcher: 
 
     # Names of various processes saved into database
-    name_rtvrtm = "RTVRTM Service"
     name_dedicated = "Dedicated Server"
     name_auto_message = "Auto Message"
     name_log_watcher = "Log Watcher"
