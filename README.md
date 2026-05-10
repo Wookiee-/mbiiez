@@ -280,17 +280,17 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
 | `rtm_queued` | RTM changes at round end (true) or immediately (false) | `true` |
 
 **How RTV/RTM Works:**
-- **RTV:** Players use `!nominate <map>` or `!nom <map>` to nominate maps before voting. Use `!maplist` or `!search <expression>` to see available maps.
-- **RTM:** Players use `!rtm <mode>` to request a mode (0=Open, 1=Semi-Authentic, 2=Full-Authentic, 3=Duel, 4=Legends)
-- When threshold is reached, a voting starts with map/mode choices:
+- **Initiate:** Players use `!rtv` or `!rtm` to initiate. RTV requires `rtv_rate`% of players (minimum `rtv_min_votes`).
+- **Nominations (RTV):** Before or after initiating, players can nominate maps with `!nominate <map>` or `!nom <map>`. Use `!maplist` or `!search <expression>` to see available maps.
+- **Mode Requests (RTM):** When using `!rtm <mode>`, the mode is recorded. Modes: 0=Open, 1=Semi, 2=Full, 3=Duel, 4=Legends
+- **Voting Phase:** When threshold is reached, voting starts with map/mode choices:
   - RTV shows map choices from nominations (or random maps if none nominated)
   - RTM shows mode choices from RTM votes
   - Players vote with `!1`, `!2`, etc. to pick their preferred option
-  - "Don't change" option is available
-- Voting uses round-based countdown (1 round by default)
-- The option with most votes wins
-- If `rtv_queued`/`rtm_queued` is `true`: change happens at next map change (round end)
-- If `rtv_queued`/`rtm_queued` is `false`: change happens immediately
+  - "Don't change" option is always available
+- **Results:** Option with most votes wins after 1 round. Use `!unvote` to change your vote during voting.
+- **Execution:** If `rtv_queued`/`rtm_queued` is `true`: change happens at round end; if `false`: immediate change
+- **Cooldown:** After a vote completes (success or failure), a cooldown period applies before new votes can be initiated
 
 #### Auto Message Plugin
 ```json
