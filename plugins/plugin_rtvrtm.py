@@ -203,6 +203,10 @@ class plugin:
         
     def handle_rtv_vote(self, player_id, player_name):
         """Handle RTV vote"""
+        print(f"[RTV_DEBUG] handle_rtv_vote called: player_id={player_id}, player_name={player_name}")
+        print(f"[RTV_DEBUG] rtv_enabled={self.rtv_enabled}, voting_active={self.voting_active}")
+        print(f"[RTV_DEBUG] players count={len(self.players)}, rtv_votes count={len(self.rtv_votes)}")
+        
         if not self.rtv_enabled:
             self.instance.tell(player_id, '^1RTV is currently disabled')
             return
@@ -231,9 +235,11 @@ class plugin:
         
         self.instance.tell(player_id, '^3Your RTV vote has been counted. ^1%i^3/^1%i^3 votes needed' % (current, required))
         self.instance.say('^3[RTV] ^1%i^3 RTV votes, ^1%i^3 needed to rock the vote' % (current, required))
+        print(f"[RTV_DEBUG] Vote recorded: {current}/{required} required")
         
         # Check if enough votes to start voting
         if current >= required:
+            print(f"[RTV_DEBUG] Threshold reached, starting RTV voting")
             self.start_rtv_voting()
     
     def start_rtv_voting(self):
@@ -322,13 +328,40 @@ class plugin:
         self.instance.tell(player_id, '^3Your RTM vote for ^1' + mode_name + '^3 has been counted. ^1' + str(current) + '^3/^1' + str(required) + '^3 votes needed')
         
         # Announce to all players
-        self.instance.say('^3[RTM] ^1' + str(current) + '^3 RTM votes for ^1' + mode_name + '^3, ^1' + str(required) + '^3 needed')
-        
-        # Check if enough votes - execute immediately like original
+        self.instance.say('^3[RTM] ^1' + str(current) + '^3 RTM votes for ^1' + mode_name + '^3, ^1' + str(required) + '^3 needed')        # Check if enough votes - start RTM voting (like RTV)
         if current >= required:
-            self.execute_rtm(mode)
-    
-    def execute_rtm(self, mode):
+            self.start_rtm_voting()
+
+    def start_rtm_voting(self):
+        """Start RTM voting process - show mode options and let players vote"""
+        self.voting_active = True
+        self.current_voting_type = 'rtm'
+        
+        # Count votes per mode to determine what options to show
+        mode_counts = {}
+        for vote_data in self.rtm_votes.values():
+            m = vote_data.get('mode', 0)
+            mode_counts[m] = mode_counts.get(m, 0) + 1
+        
+        # Sort by count (priority) and pick top modes
+        sorted_modes = sorted(mode_counts.items(), key=lambda x: x[1], reverse=True)
+        
+        # Build voting options from top voted modes (max 4 modes + Don't change)
+        self.voting_options = {}
+        for i, (mode_num, count) in enumerate(sorted_modes[:4], 1):
+            mode_name = self.modes.get(mode_num, 'Unknown')
+            self.voting_options[i] = {'count': 0, 'priority': count, 'value': mode_num, 'display': mode_name}
+        
+        # Add "Don't change" option
+        self.voting_options[len(self.voting_options) + 1] = {'count': 0, 'priority': 0, 'value': 'dontchange', 'display': "Don't change"}
+        
+        # Announce voting
+        options_str = ', '.join(['^1%i^3: ^7%s' % (k, v['display']) for k, v in self.voting_options.items()])
+        self.instance.say('^3[RTM] ^7Voting started! Cast your vote: ^1!1^7-^1!%i' % (len(self.voting_options)))
+        self.instance.say('^2[Options] ^7%s' % options_str)
+        
+        self.voting_start_time = time.time()
+        self.players_voted = {}
         """Execute RTM - change mode"""
         self.last_vote_time = time.time()
         
