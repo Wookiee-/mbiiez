@@ -162,17 +162,8 @@ class instance:
 
     # Is RTV / RTM Service running and instance
     def get_rtv_status(self):  
-        if IS_WINDOWS:
-            # Windows: use tasklist
-            response = os.popen('tasklist /FI "IMAGENAME eq python*"').read()
-            return 'rtvrtm' in response.lower()
-        else:
-            # Linux: use ps
-            response = os.popen("ps ax | grep rtvrtm.py").read()
-            for item in response.splitlines():
-                if 'rtvrtm' in item and 'grep' not in item:
-                    return True
-        return False    # Is the chosen engine running an instance
+        # RTV is now handled by the plugin system
+        return self.has_plugin('rtvrtm')
     def get_ded_engine_status(self):
         if IS_WINDOWS:
             # Windows: use tasklist
