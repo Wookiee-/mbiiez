@@ -49,7 +49,6 @@ class process_handler:
             
             if IS_WINDOWS:
                 # Windows: use multiprocessing instead of fork
-                from mbiiez.db import db
                 times_started = 0
                 
                 def run_service():
