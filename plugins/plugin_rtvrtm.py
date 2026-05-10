@@ -231,9 +231,7 @@ class plugin:
         
     def handle_rtv_vote(self, player_id, player_name):
         """Handle RTV vote"""
-        print(f"[RTV_DEBUG] handle_rtv_vote called: player_id={player_id}, player_name={player_name}")
-        print(f"[RTV_DEBUG] rtv_enabled={self.rtv_enabled}, voting_active={self.voting_active}")
-        print(f"[RTV_DEBUG] players count={len(self.players)}, rtv_votes count={len(self.rtv_votes)}")
+
         
         if not self.rtv_enabled:
             self.instance.tell(player_id, '^1RTV is currently disabled')
@@ -263,11 +261,11 @@ class plugin:
         
         self.instance.tell(player_id, '^3Your RTV vote has been counted. ^1%i^3/^1%i^3 votes needed' % (current, required))
         self.instance.say('^3[RTV] ^1%i^3 RTV votes, ^1%i^3 needed to rock the vote' % (current, required))
-        print(f"[RTV_DEBUG] Vote recorded: {current}/{required} required")
+
         
         # Check if enough votes to start voting
         if current >= required:
-            print(f"[RTV_DEBUG] Threshold reached, starting RTV voting")
+
             self.start_rtv_voting()
     
     def start_rtv_voting(self):
