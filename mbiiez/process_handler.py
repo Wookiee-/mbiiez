@@ -215,8 +215,10 @@ class process_handler:
             os.kill(pid, 0)
             return True
              
-        except (OSError, ProcessLookupError):           
-            return False    def stop_all(self):
+        except (OSError, ProcessLookupError):
+            return False
+
+    def stop_all(self):
         """
         Stops all processes by targeting the specific port and screen.
         """  
@@ -266,7 +268,9 @@ class process_handler:
         
         # 3. Final cleanup of the DB for this specific name
         db().execute("delete from processes where instance = '{}' and name = '{}'".format(self.instance.name, name))
-        return True    def add_pid(self, name, pid, instance):
+        return True
+
+    def add_pid(self, name, pid, instance):
         """
         Add a process PID to the database
         """
