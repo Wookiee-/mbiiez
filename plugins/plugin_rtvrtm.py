@@ -76,9 +76,14 @@ class plugin:
         self.recently_played_max = 5
         self.nomination_order = []  # List of player_ids in nomination order
         
-        # Maps from instance config
+        # Maps from instance config - debug what's actually being loaded
         self.maps = instance.config.get('primary_maps', [])
         self.secondary_maps = instance.config.get('secondary_maps', [])
+        
+        # Debug: Log what's in config at root level
+        instance.log_handler.log('[RTV/RTM] Config keys: ' + str(list(instance.config.keys())[:10]))
+        instance.log_handler.log('[RTV/RTM] primary_maps found: ' + str(len(self.maps)) + ' maps')
+        instance.log_handler.log('[RTV/RTM] secondary_maps found: ' + str(len(self.secondary_maps)) + ' maps')
         
         # Mode definitions
         self.modes = {
