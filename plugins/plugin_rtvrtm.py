@@ -280,27 +280,6 @@ class plugin:
         self.voting_start_time = time.time()
         self.players_voted = {}
     
-    def execute_rtv(self):
-        """Execute RTV - change to random map"""
-        self.last_vote_time = time.time()
-        
-        # Filter out recently played maps
-        available_maps = [m for m in self.maps if m not in self.recently_played]
-        if not available_maps:
-            available_maps = self.maps
-            
-        # Pick random map
-        new_map = random.choice(available_maps)
-        
-        self.instance.say('^3[RTV] ^1Rock the Vote ^3successful! Changing to ^2' + new_map)
-        self.instance.log_handler.log('[RTV] Vote successful - Changing to ' + new_map)
-        
-        # Change map
-        self.instance.map(new_map)
-        
-        # Clear votes
-        self.rtv_votes = {}
-        
     def handle_rtm_vote(self, player_id, player_name, message=''):
         """Handle RTM vote"""
         if not self.rtm_enabled:
