@@ -49,7 +49,7 @@ class plugin:
     
     def register(self):
         '''Register event handlers'''
-        self.instance.event_handler.register_event('player_connects', self.on_player_connects)
+        self.instance.event_handler.register_event('player_connected', self.on_player_connects)
         self.instance.event_handler.register_event('new_log_line', self.on_new_log_line)
     
     def init_vpn_database(self):
