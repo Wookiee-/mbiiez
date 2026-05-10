@@ -363,7 +363,9 @@ class plugin:
         self.rtm_votes[player_id] = {'name': player_name, 'mode': mode, 'time': current_time}
         
         # Calculate required votes
-        required = max(int(total_players * self.rtm_rate / 100), self.rtm_min_votes)
+        required = int(total_players * self.rtm_rate / 100)
+        if required < 1:
+            required = 1
         current = len(self.rtm_votes)
         
         mode_name = self.modes.get(mode, 'Unknown')
@@ -533,7 +535,9 @@ class plugin:
         
         total_players = max(len(self.players), 1)
         rtv_required = max(int(total_players * self.rtv_rate / 100), self.rtv_min_votes)
-        rtm_required = max(int(total_players * self.rtm_rate / 100), self.rtm_min_votes)
+        rtm_required = int(total_players * self.rtm_rate / 100)
+        if rtm_required < 1:
+            rtm_required = 1
         
         status = '^3Current Votes:\n'
         status += '^1RTV: ^3' + str(rtv_count) + '/' + str(rtv_required) + ' needed\n'
@@ -567,12 +571,12 @@ class plugin:
             
         if player_id not in self.rtm_votes:
             self.instance.say('^2[RTM] ^7%s ^7didn\'t want to rock the mode yet (%i/%i).' %
-                (player_name, len(self.rtm_votes), max(int(len(self.players) * self.rtm_rate / 100), self.rtm_min_votes)))
+                (player_name, len(self.rtm_votes), rtm_required))
             return
             
         del self.rtm_votes[player_id]
         self.instance.say('^2[RTM] ^7%s ^7no longer wants to rock the mode (%i/%i).' %
-            (player_name, len(self.rtm_votes), max(int(len(self.players) * self.rtm_rate / 100), self.rtm_min_votes)))
+            (player_name, len(self.rtm_votes), rtm_required))
 
     def handle_maplist(self, player_id, page):
         """Show map list with pagination"""
