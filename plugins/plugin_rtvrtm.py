@@ -299,9 +299,9 @@ class plugin:
         votes_display = ', '.join('%i(%i): %s' % (i, 0, m) for i, m in enumerate(map_choices, 1))
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
-        # Broadcast voting messages (like original rtvrtm.py which uses svsay continuously)
-        self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
-        self.instance.say('^2[Votes] ^7' + votes_display)
+        # Broadcast voting messages using rcon directly (like original rtvrtm.py)
+        self.instance.console.rcon('svsay ^2[RTV] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
+        self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -382,8 +382,9 @@ class plugin:
         # Announce voting with mode choices - match original rtvrtm.py format
         votes_display = ', '.join('%i(%i): %s' % (i, 0, self.modes.get(m, str(m))) for i, m in enumerate(mode_choices, 1))
         votes_display += ', %i(0): Don\'t change' % (len(mode_choices) + 1)
-        self.instance.say('^2[RTM] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
-        self.instance.say('^2[Votes] ^7' + votes_display)
+        # Broadcast voting messages using rcon directly (like original rtvrtm.py)
+        self.instance.console.rcon('svsay ^2[RTM] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
+        self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -643,17 +644,14 @@ class plugin:
         # Announce vote
         self.instance.say('^2[Voting] ^7Player ^1%s ^7voted for ^1%s' % (player_id, self.voting_options[vote_number]['display']))
         
-        # Update voting message with current counts (like original rtvrtm.py)
-        yes_votes = self.voting_options.get(1, {}).get('count', 0)
-        no_votes = self.voting_options.get(2, {}).get('count', 0)
-        # Update voting message with current counts (generic for any voting options)
+        # Update voting message with current counts using rcon directly (like original rtvrtm.py)
         total_players = len(self.players)
         voted_count = len(self.players_voted)
         voting_name = self.current_voting_type.upper()
         votes_display = ', '.join('%i(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
                                   for opt_num, opt_data in sorted(self.voting_options.items()))
-        self.instance.say('^2[%s] ^7Type !number to vote. Voting will complete in ^21^7 rounds (%i/%i).' % (voting_name, voted_count, total_players))
-        self.instance.say('^2[Votes] ^7' + votes_display)
+        self.instance.console.rcon('svsay ^2[%s] ^7Type !number to vote. Voting will complete in ^21^7 rounds (%i/%i).' % (voting_name, voted_count, total_players))
+        self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
         
         # Check if voting should end (all players voted or time expired)
         self.check_voting_end()
