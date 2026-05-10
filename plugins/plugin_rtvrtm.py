@@ -80,8 +80,7 @@ class plugin:
         self.maps = instance.config.get('primary_maps', [])
         self.secondary_maps = instance.config.get('secondary_maps', [])
         
-        # Debug: Show in-game so user can see
-        instance.say('^2[RTV/RTM] ^7Config loaded - primary_maps: ^1' + str(len(self.maps)) + '^7, secondary_maps: ^1' + str(len(self.secondary_maps)))
+
         
         # Mode definitions
         self.modes = {
@@ -107,6 +106,8 @@ class plugin:
             self.instance.log_handler.log('[RTV/RTM] RTV is enabled')
         if self.rtm_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTM is enabled')
+        # Show in-game so user can see map loading status
+        self.instance.say('^2[RTV/RTM] ^7Config loaded - primary_maps: ^1' + str(len(self.maps)) + '^7, secondary_maps: ^1' + str(len(self.secondary_maps)))
             
     def on_new_log_line(self, args):
         """Handle new log lines - for parsing RTV triggers from game log"""
