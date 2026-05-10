@@ -258,6 +258,11 @@ class plugin:
         if total_players == 0:
             return  # Silent reject - no players to vote
             
+        # Calculate required votes - use 1 as minimum like original rtvrtm.py
+        required = int(total_players * self.rtv_rate / 100)
+        if required < 1:
+            required = 1
+            
         # Check if player already voted (like original rtvrtm.py)
         if player_id in self.rtv_votes:
             self.instance.say('^2[RTV] ^7%s ^7already wanted to rock the vote (^2%i^7/^2%i^7).' % (player_name, len(self.rtv_votes), required))
@@ -265,11 +270,6 @@ class plugin:
             
         # Add vote
         self.rtv_votes[player_id] = {'name': player_name}
-        
-        # Calculate required votes - use 1 as minimum like original rtvrtm.py
-        required = int(total_players * self.rtv_rate / 100)
-        if required < 1:
-            required = 1
         current = len(self.rtv_votes)
         
         # Broadcast who wants to rock the vote (like original rtvrtm.py)
