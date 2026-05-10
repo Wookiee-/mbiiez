@@ -11,11 +11,13 @@ Ported from the original rtvrtm.py to Python 3 and integrated as a mbiiEZ plugin
 
 import time
 import random
+import threading
 from datetime import datetime
 
 VERSION = '3.6c_py3'
 MAPLIST_MAX_SIZE = 750
 SLEEP_INTERVAL = 0.075
+MAP_STATUS_DELAY = 10.0  # Seconds to wait before broadcasting map status on load
 
 
 class plugin:
@@ -108,8 +110,7 @@ class plugin:
             self.instance.log_handler.log('[RTV/RTM] RTM is enabled')
         
         # Schedule map status broadcast after server is ready (avoid connection refused)
-        import threading
-        threading.Timer(10.0, self._broadcast_map_status).start()
+        threading.Timer(MAP_STATUS_DELAY, self._broadcast_map_status).start()
     
     def _broadcast_map_status(self):
         """Broadcast map loading status in-game after server is ready"""
