@@ -102,8 +102,14 @@ class plugin:
         self.instance.log_handler.log('[RTV/RTM] Plugin loaded - Version ' + VERSION)
         if self.rtv_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTV is enabled')
-        if self.rtm_enabled:
+        if self.rmt_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTM is enabled')
+        # Debug: log config keys and map counts
+        self.instance.log_handler.log('[RTV/RTM] DEBUG: config keys: ' + str(list(self.instance.config.keys())[:10]))
+        self.instance.log_handler.log('[RTV/RTM] DEBUG: primary_maps in config: ' + str('primary_maps' in self.instance.config))
+        self.instance.log_handler.log('[RTV/RTM] DEBUG: self.maps count: ' + str(len(self.maps)))
+        self.instance.log_handler.log('[RTV/RTM] DEBUG: secondary_maps in config: ' + str('secondary_maps' in self.instance.config))
+        self.instance.log_handler.log('[RTV/RTM] DEBUG: self.secondary_maps count: ' + str(len(self.secondary_maps)))
             
     def on_new_log_line(self, args):
         """Handle new log lines - for parsing RTV triggers from game log"""
