@@ -650,7 +650,11 @@ class plugin:
         voting_name = self.current_voting_type.upper()
         votes_display = ', '.join('%i(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
                                   for opt_num, opt_data in sorted(self.voting_options.items()))
-        self.instance.console.rcon('svsay ^2[%s] ^7Type !number to vote. Voting will complete in ^21^7 rounds (%i/%i).' % (voting_name, voted_count, total_players))
+        # Send voting countdown message
+        if voted_count < total_players:
+            rounds_left = total_players - voted_count
+            self.instance.console.rcon('svsay ^2[%s] ^7Type !number to vote. Voting will complete in ^2%d ^7round%s (%i/%i).' % 
+                                      (voting_name, rounds_left, 's' if rounds_left != 1 else '', voted_count, total_players))
         self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
         
         # Check if voting should end (all players voted or time expired)
@@ -686,6 +690,14 @@ class plugin:
         all_voted = voted_count >= total_players and total_players > 0
         
         if not (time_expired or all_voted):
+            # Re-broadcast voting options periodically (like original rtvrtm.py does continuously)
+            if int(voting_time) % 30 == 0:  # Every 30 seconds
+                voting_name = self.current_voting_type.upper()
+                votes_display = ', '.join('%i(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
+                                          for opt_num, opt_data in sorted(self.voting_options.items()))
+                self.instance.console.rcon('svsay ^2[%s] ^7Type !number to vote. Voting will complete in ^21 ^7round (%i/%i).' % 
+                                          (voting_name, voted_count, total_players))
+                self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
             return
         
         # Find winning option (like original rtvrtm.py)
@@ -699,15 +711,21 @@ class plugin:
         winning_value = self.voting_options[winning_option]['value']
         winning_display = self.voting_options[winning_option]['display']
         
+        # Re-broadcast final voting options one last time before announcing result
+        voting_name = self.current_voting_type.upper()
+        votes_display = ', '.join('%i(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
+                                  for opt_num, opt_data in sorted(self.voting_options.items()))
+        self.instance.console.rcon('svsay ^2[%s] ^7Final votes: ^2[%s]' % (voting_name, votes_display))
+        
         if self.current_voting_type == 'rtv':
             if winning_value is None:
                 # "Don't change" option won - stay on current map, clear nominations
-                self.instance.say('^2[RTV] ^7Voting complete - majority chose to keep current map.')
+                self.instance.console.rcon('svsay ^2[RTV] ^7Majority chose to keep current map.')
                 self.rtv_votes = {}
                 self._clear_nominations()
             else:
                 # Map change wins - use the voted-on map
-                self.instance.say('^2[RTV] ^7Voting complete - ^1%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
+                self.instance.console.rcon('svsay ^2[RTV] ^7%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
                 if self.rtv_queued:
                     self.queue_rtv_change(winning_value)
                 else:
@@ -716,11 +734,11 @@ class plugin:
         elif self.current_voting_type == 'rtm':
             if winning_value is None:
                 # "Don't change" option won - stay on current mode, clear RTM votes
-                self.instance.say('^2[RTM] ^7Voting complete - majority chose to keep current mode.')
+                self.instance.console.rcon('svsay ^2[RTM] ^7Majority chose to keep current mode.')
                 self.rtm_votes = {}
             else:
                 # Mode change wins - use the voted-on mode
-                self.instance.say('^2[RTM] ^7Voting complete - ^1%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
+                self.instance.console.rcon('svsay ^2[RTM] ^7%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
                 if self.rtm_queued:
                     self.queue_rtm_change(winning_value)
                 else:
