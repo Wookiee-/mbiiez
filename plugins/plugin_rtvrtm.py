@@ -618,8 +618,8 @@ class plugin:
         
         if self.current_voting_type == 'rtv':
             if yes_votes > no_votes:
-                # Yes wins - change to random map
-                self.execute_rtv_random()
+                # Yes wins - change to most nominated map
+                self.execute_rtv_nominated()
             else:
                 self.instance.say('^3[RTV] ^7Voting failed - majority voted No.')
                 self.rtv_votes = {}
@@ -636,16 +636,30 @@ class plugin:
         self.voting_options = {}
         self.players_voted = {}
     
-    def execute_rtv_random(self):
-        """Execute RTV - change to random map"""
+    def execute_rtv_nominated(self):
+        """Execute RTV - change to most nominated map"""
         self.last_vote_time = time.time()
-        self.rtv_votes = {}  # Clear votes after execution
         
-        # Pick random map from available
-        available_maps = [m for m in self.maps if m not in self.recently_played]
-        if not available_maps:
-            available_maps = self.maps
-        new_map = random.choice(available_maps)
+        # Find the most nominated map
+        nominated_maps = []
+        for player_data in self.players.values():
+            if player_data[3]:  # index 3 is nomination
+                nominated_maps.append(player_data[3])
+        
+        if not nominated_maps:
+            # No nominations - pick random from available
+            available_maps = [m for m in self.maps if m not in self.recently_played]
+            if not available_maps:
+                available_maps = self.maps
+            new_map = random.choice(available_maps)
+        else:
+            # Count nominations and pick the most nominated
+            map_counts = {}
+            for m in nominated_maps:
+                map_counts[m] = map_counts.get(m, 0) + 1
+            new_map = max(map_counts.items(), key=lambda x: x[1])[0]
+        
+        self.rtv_votes = {}  # Clear votes after execution
         
         self.instance.say('^3[RTV] ^1Rock the Vote ^3successful! Changing to ^2' + new_map)
         self.instance.log_handler.log('[RTV] Vote successful - Changing to ' + new_map)
