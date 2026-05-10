@@ -273,9 +273,6 @@ class plugin:
         
         total_players = len(self.players)
         
-        # Debug logging
-        self.instance.log_handler.log('[RTV] start_rtv_voting called - total_players=%d, self.maps count=%d' % (total_players, len(self.maps)))
-        
         # Get map choices from nominations (like original rtvrtm.py)
         nominated_maps = [p[3] for p in self.players.values() if p[3]]
         
