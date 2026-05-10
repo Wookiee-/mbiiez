@@ -102,7 +102,7 @@ class plugin:
         self.instance.log_handler.log('[RTV/RTM] Plugin loaded - Version ' + VERSION)
         if self.rtv_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTV is enabled')
-        if self.rmt_enabled:
+        if self.rtm_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTM is enabled')
         # Debug: log config keys and map counts
         self.instance.log_handler.log('[RTV/RTM] DEBUG: config keys: ' + str(list(self.instance.config.keys())[:10]))
