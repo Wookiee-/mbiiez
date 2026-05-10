@@ -40,6 +40,9 @@ class plugin:
         self.voting_options = {}  # {option_number: {count, priority, value, display}}
         self.voting_start_time = 0
         self.voting_duration = 60  # 60 seconds
+        
+        # Pending change for next round
+        self.pending_change = None  # {'type': 'map' or 'mode', 'value': map_name or mode_num}
         self.players_voted = {}  # Track who voted in current voting
         self.current_map = None
         self.current_mode = None
@@ -186,7 +189,28 @@ class plugin:
     def on_map_change(self, args):
         """Handle map change"""
         self.current_map = args.get('map_name', '')
-        # Add to recently played (list for simple nom_type compatibility)
+        
+        # Check for pending change to execute
+        if self.pending_change:
+            if self.pending_change['type'] == 'map':
+                map_name = self.pending_change['value']
+                self.instance.say('^3[RTV] ^1Rock the Vote ^3executing! Changing to ^2' + map_name)
+                self.instance.log_handler.log('[RTV] Executing queued map change to ' + map_name)
+                # Map change already in progress - don't call instance.map() again
+                # Just update recently_played
+                if map_name not in self.recently_played:
+                    self.recently_played.insert(0, map_name)
+                    if len(self.recently_played) > self.recently_played_max:
+                        self.recently_played.pop()
+            elif self.pending_change['type'] == 'mode':
+                mode = self.pending_change['value']
+                mode_name = self.modes.get(mode, 'Unknown')
+                self.instance.say('^3[RTM] ^1Rock the Mode ^3executing! Changing to ^2' + mode_name)
+                self.instance.log_handler.log('[RTM] Executing queued mode change to ' + mode_name)
+                self.instance.mode(mode)  # Mode change still needed
+            self.pending_change = None
+        
+        # Add current map to recently played
         if self.current_map in self.recently_played:
             self.recently_played.remove(self.current_map)
         self.recently_played.insert(0, self.current_map)
@@ -618,15 +642,15 @@ class plugin:
         
         if self.current_voting_type == 'rtv':
             if yes_votes > no_votes:
-                # Yes wins - change to most nominated map
-                self.execute_rtv_nominated()
+                # Yes wins - queue change for next round
+                self.queue_rtv_change()
             else:
                 self.instance.say('^3[RTV] ^7Voting failed - majority voted No.')
                 self.rtv_votes = {}
         elif self.current_voting_type == 'rtm':
             if yes_votes > no_votes:
-                # Yes wins - change to most requested mode
-                self.execute_rtm_requested()
+                # Yes wins - queue change for next round
+                self.queue_rtm_change()
             else:
                 self.instance.say('^3[RTM] ^7Voting failed - majority voted No.')
                 self.rtm_votes = {}
@@ -636,6 +660,53 @@ class plugin:
         self.voting_options = {}
         self.players_voted = {}
     
+    def queue_rtv_change(self):
+        """Queue RTV change for next round"""
+        # Find the most nominated map
+        nominated_maps = []
+        for player_data in self.players.values():
+            if player_data[3]:  # index 3 is nomination
+                nominated_maps.append(player_data[3])
+        
+        if not nominated_maps:
+            # No nominations - pick random from available
+            available_maps = [m for m in self.maps if m not in self.recently_played]
+            if not available_maps:
+                available_maps = self.maps
+            map_name = random.choice(available_maps)
+        else:
+            # Count nominations and pick the most nominated
+            map_counts = {}
+            for m in nominated_maps:
+                map_counts[m] = map_counts.get(m, 0) + 1
+            map_name = max(map_counts.items(), key=lambda x: x[1])[0]
+        
+        self.pending_change = {'type': 'map', 'value': map_name}
+        self.rtv_votes = {}  # Clear votes
+        
+        self.instance.say('^3[RTV] ^7Changing map to ^2%s ^7next round.' % map_name)
+        self.instance.log_handler.log('[RTV] Vote successful - Queued map change to ' + map_name + ' for next round')
+    
+    def queue_rtm_change(self):
+        """Queue RTM change for next round"""
+        # Find the most requested mode
+        mode_counts = {}
+        for vote_data in self.rtm_votes.values():
+            m = vote_data.get('mode', 0)
+            mode_counts[m] = mode_counts.get(m, 0) + 1
+        
+        if not mode_counts:
+            mode = 0  # Default to Open
+        else:
+            mode = max(mode_counts.items(), key=lambda x: x[1])[0]
+        
+        mode_name = self.modes.get(mode, 'Unknown')
+        self.pending_change = {'type': 'mode', 'value': mode}
+        self.rtm_votes = {}  # Clear votes
+        
+        self.instance.say('^3[RTM] ^7Changing mode to ^2%s ^7next round.' % mode_name)
+        self.instance.log_handler.log('[RTM] Vote successful - Queued mode change to ' + mode_name + ' for next round')
+
     def execute_rtv_nominated(self):
         """Execute RTV - change to most nominated map"""
         self.last_vote_time = time.time()
