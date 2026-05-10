@@ -76,9 +76,9 @@ class plugin:
         self.recently_played_max = 5
         self.nomination_order = []  # List of player_ids in nomination order
         
-        # Maps from instance config
-        self.maps = instance.config.get('plugins', {}).get('rtvrtm', {}).get('primary_maps', [])
-        self.secondary_maps = instance.config.get('plugins', {}).get('rtvrtm', {}).get('secondary_maps', [])
+        # Maps from instance config (at root level, not under plugins.rtvrtm)
+        self.maps = instance.config.get('primary_maps', [])
+        self.secondary_maps = instance.config.get('secondary_maps', [])
         
 
         
