@@ -103,11 +103,9 @@ class plugin:
         """Called when plugin is loaded"""
         self.instance.log_handler.log('[RTV/RTM] Plugin loaded - Version ' + VERSION)
         if self.rtv_enabled:
-            self.instance.log_handler.log('[RTV/RTM] RTV is enabled')
+            self.instance.log_handler.log('[RTV/RTM] RTV is enabled - primary_maps: ' + str(len(self.maps)) + ', secondary_maps: ' + str(len(self.secondary_maps)))
         if self.rtm_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTM is enabled')
-        # Show in-game so user can see map loading status
-        self.instance.say('^2[RTV/RTM] ^7Config loaded - primary_maps: ^1' + str(len(self.maps)) + '^7, secondary_maps: ^1' + str(len(self.secondary_maps)))
             
     def on_new_log_line(self, args):
         """Handle new log lines - for parsing RTV triggers from game log"""
