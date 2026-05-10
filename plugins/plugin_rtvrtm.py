@@ -612,16 +612,6 @@ class plugin:
         if not (time_expired or all_voted):
             return
         
-        # Find winning option
-        winning_option = None
-        max_votes = -1
-        for opt_num, opt_data in sorted(self.voting_options.items()):
-            if opt_data['count'] > max_votes:
-                max_votes = opt_data['count']
-                winning_option = opt_num
-        
-        winning_value = self.voting_options[winning_option]['value']
-        
         # Execute result - Yes/No voting
         yes_votes = self.voting_options.get(1, {}).get('count', 0)
         no_votes = self.voting_options.get(2, {}).get('count', 0)
