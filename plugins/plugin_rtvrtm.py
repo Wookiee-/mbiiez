@@ -300,11 +300,12 @@ class plugin:
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
         # Broadcast voting messages using rcon directly (like original rtvrtm.py)
-        self.instance.console.rcon('svsay ^2[RTV] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
+        self.instance.console.rcon('svsay ^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
         self.instance.console.rcon('svsay ^2[Votes] ^7' + votes_display)
         
         self.voting_start_time = time.time()
         self.players_voted = {}
+        self.last_voting_broadcast = 0
     
     def handle_rtm_vote(self, player_id, player_name, message=''):
         """Handle RTM vote"""
@@ -691,7 +692,9 @@ class plugin:
         
         if not (time_expired or all_voted):
             # Re-broadcast voting options periodically (like original rtvrtm.py does continuously)
-            if int(voting_time) % 30 == 0:  # Every 30 seconds
+            # Send every 30 seconds, not multiple times per second
+            if voting_time - self.last_voting_broadcast >= 30:
+                self.last_voting_broadcast = voting_time
                 voting_name = self.current_voting_type.upper()
                 votes_display = ', '.join('%i(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
                                           for opt_num, opt_data in sorted(self.voting_options.items()))
@@ -711,16 +714,10 @@ class plugin:
         winning_value = self.voting_options[winning_option]['value']
         winning_display = self.voting_options[winning_option]['display']
         
-        # Re-broadcast final voting options one last time before announcing result
-        voting_name = self.current_voting_type.upper()
-        votes_display = ', '.join('%i(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
-                                  for opt_num, opt_data in sorted(self.voting_options.items()))
-        self.instance.console.rcon('svsay ^2[%s] ^7Final votes: ^2[%s]' % (voting_name, votes_display))
-        
         if self.current_voting_type == 'rtv':
             if winning_value is None:
                 # "Don't change" option won - stay on current map, clear nominations
-                self.instance.console.rcon('svsay ^2[RTV] ^7Majority chose to keep current map.')
+                self.instance.console.rcon('svsay ^2[RTV] ^7Voting complete - majority chose to keep current map.')
                 self.rtv_votes = {}
                 self._clear_nominations()
             else:
@@ -734,7 +731,7 @@ class plugin:
         elif self.current_voting_type == 'rtm':
             if winning_value is None:
                 # "Don't change" option won - stay on current mode, clear RTM votes
-                self.instance.console.rcon('svsay ^2[RTM] ^7Majority chose to keep current mode.')
+                self.instance.console.rcon('svsay ^2[RTM] ^7Voting complete - majority chose to keep current mode.')
                 self.rtm_votes = {}
             else:
                 # Mode change wins - use the voted-on mode
@@ -755,7 +752,7 @@ class plugin:
         self.pending_change = {'type': 'map', 'value': map_name}
         self.rtv_votes = {}  # Clear votes
         
-        self.instance.say('^2[RTV] ^7Changing map to ^2%s ^7next round.' % map_name)
+        self.instance.console.rcon('svsay ^2[RTV] ^7Changing map to ^2%s ^7next round.' % map_name)
         self.instance.log_handler.log('[RTV] Vote successful - Queued map change to ' + map_name + ' for next round')
     
     def queue_rtm_change(self, mode):
@@ -764,14 +761,14 @@ class plugin:
         self.pending_change = {'type': 'mode', 'value': mode}
         self.rtm_votes = {}  # Clear votes
         
-        self.instance.say('^2[RTM] ^7Changing mode to ^2%s ^7next round.' % mode_name)
+        self.instance.console.rcon('svsay ^2[RTM] ^7Changing mode to ^2%s ^7next round.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Queued mode change to ' + mode_name + ' for next round')
     
     def execute_rtv_immediate(self, map_name):
         """Execute RTV change immediately - uses the voted-on map"""
         self.rtv_votes = {}  # Clear votes
         self.instance.map(map_name)
-        self.instance.say('^2[RTV] ^7Map changed to ^2%s.' % map_name)
+        self.instance.console.rcon('svsay ^2[RTV] ^7Map changed to ^2%s.' % map_name)
         self.instance.log_handler.log('[RTV] Vote successful - Changed map to ' + map_name)
     
     def execute_rtm_immediate(self, mode):
@@ -779,7 +776,7 @@ class plugin:
         mode_name = self.modes.get(mode, 'Unknown')
         self.rtm_votes = {}  # Clear votes
         self.instance.mode(mode)
-        self.instance.say('^2[RTM] ^7Mode changed to ^2%s.' % mode_name)
+        self.instance.console.rcon('svsay ^2[RTM] ^7Mode changed to ^2%s.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Changed mode to ' + mode_name)
     
     def before_dedicated_server_launch(self):
