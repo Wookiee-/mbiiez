@@ -160,10 +160,6 @@ class instance:
 
         return None  
 
-    # Is RTV / RTM Service running and instance
-    def get_rtv_status(self):  
-        # RTV is now handled by the plugin system
-        return self.has_plugin('rtvrtm')
     def get_ded_engine_status(self):
         if IS_WINDOWS:
             # Windows: use tasklist
@@ -413,10 +409,6 @@ class instance:
         else:
             return False
                 
-    def rtv_running(self):
-        # RTV is now handled by the plugin system
-        return self.has_plugin('rtvrtm')
-
     def has_plugin(self, plugin_name):
     
         if(plugin_name in self.config['plugins']):
