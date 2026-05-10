@@ -55,6 +55,10 @@ class plugin:
         self.rtm_rate = instance.config.get('plugins', {}).get('rtvrtm', {}).get('rtm_rate', 50)
         self.rtm_min_votes = instance.config.get('plugins', {}).get('rtvrtm', {}).get('rtm_min_votes', 20)
         
+        # Queued changes (execute at round end) vs immediate
+        self.rtv_queued = instance.config.get('plugins', {}).get('rtvrtm', {}).get('rtv_queued', True)
+        self.rtm_queued = instance.config.get('plugins', {}).get('rtvrtm', {}).get('rtm_queued', True)
+        
         # Map priority for nominations
         self.map_priority = instance.config.get('plugins', {}).get('rtvrtm', {}).get('map_priority', [0, 0, 0])
         self.nomination_type = instance.config.get('plugins', {}).get('rtvrtm', {}).get('nomination_type', 1)
@@ -642,15 +646,21 @@ class plugin:
         
         if self.current_voting_type == 'rtv':
             if yes_votes > no_votes:
-                # Yes wins - queue change for next round
-                self.queue_rtv_change()
+                # Yes wins
+                if self.rtv_queued:
+                    self.queue_rtv_change()
+                else:
+                    self.execute_rtv_immediate()
             else:
                 self.instance.say('^3[RTV] ^7Voting failed - majority voted No.')
                 self.rtv_votes = {}
         elif self.current_voting_type == 'rtm':
             if yes_votes > no_votes:
-                # Yes wins - queue change for next round
-                self.queue_rtm_change()
+                # Yes wins
+                if self.rtm_queued:
+                    self.queue_rtm_change()
+                else:
+                    self.execute_rtm_immediate()
             else:
                 self.instance.say('^3[RTM] ^7Voting failed - majority voted No.')
                 self.rtm_votes = {}
@@ -706,6 +716,51 @@ class plugin:
         
         self.instance.say('^3[RTM] ^7Changing mode to ^2%s ^7next round.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Queued mode change to ' + mode_name + ' for next round')
+    
+    def execute_rtv_immediate(self):
+        """Execute RTV change immediately"""
+        # Find the most nominated map
+        nominated_maps = []
+        for player_data in self.players.values():
+            if player_data[3]:  # index 3 is nomination
+                nominated_maps.append(player_data[3])
+        
+        if not nominated_maps:
+            # No nominations - pick random from available
+            available_maps = [m for m in self.maps if m not in self.recently_played]
+            if not available_maps:
+                available_maps = self.maps
+            map_name = random.choice(available_maps)
+        else:
+            # Count nominations and pick the most nominated
+            map_counts = {}
+            for m in nominated_maps:
+                map_counts[m] = map_counts.get(m, 0) + 1
+            map_name = max(map_counts.items(), key=lambda x: x[1])[0]
+        
+        self.rtv_votes = {}  # Clear votes
+        self.instance.map(map_name)
+        self.instance.say('^3[RTV] ^7Map changed to ^2%s.' % map_name)
+        self.instance.log_handler.log('[RTV] Vote successful - Changed map to ' + map_name)
+    
+    def execute_rtm_immediate(self):
+        """Execute RTM change immediately"""
+        # Find the most requested mode
+        mode_counts = {}
+        for vote_data in self.rtm_votes.values():
+            m = vote_data.get('mode', 0)
+            mode_counts[m] = mode_counts.get(m, 0) + 1
+        
+        if not mode_counts:
+            mode = 0  # Default to Open
+        else:
+            mode = max(mode_counts.items(), key=lambda x: x[1])[0]
+        
+        mode_name = self.modes.get(mode, 'Unknown')
+        self.rtm_votes = {}  # Clear votes
+        self.instance.mode(mode)
+        self.instance.say('^3[RTM] ^7Mode changed to ^2%s.' % mode_name)
+        self.instance.log_handler.log('[RTM] Vote successful - Changed mode to ' + mode_name)
 
     def execute_rtv_nominated(self):
         """Execute RTV - change to most nominated map"""
