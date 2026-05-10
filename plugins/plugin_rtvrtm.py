@@ -362,8 +362,11 @@ class plugin:
         
         self.voting_start_time = time.time()
         self.players_voted = {}
+    
+    def execute_rtm(self, mode):
         """Execute RTM - change mode"""
         self.last_vote_time = time.time()
+        self.rtm_votes = {}  # Clear votes after execution
         
         mode_name = self.modes.get(mode, 'Unknown')
         self.instance.say('^3[RTM] ^1Rock the Mode ^3successful! Changing to ^2' + mode_name)
@@ -371,8 +374,6 @@ class plugin:
         
         # Change mode
         self.instance.mode(mode)
-        
-        # Clear votes
         self.rtm_votes = {}
         
     def handle_nomination(self, player_id, player_name, map_name):
@@ -684,6 +685,7 @@ class plugin:
     def execute_rtv_with_map(self, map_name):
         """Execute RTV with specific map"""
         self.last_vote_time = time.time()
+        self.rtv_votes = {}  # Clear votes after execution
         
         self.instance.say('^3[RTV] ^1Rock the Vote ^3successful! Changing to ^2' + map_name)
         self.instance.log_handler.log('[RTV] Vote successful - Changing to ' + map_name)
