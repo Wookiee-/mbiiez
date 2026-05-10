@@ -269,21 +269,40 @@ class plugin:
             self.start_rtv_voting()
     
     def start_rtv_voting(self):
-        """Start RTV voting process - Yes/No vote"""
+        """Start RTV voting process - show map choices from nominations"""
         self.voting_active = True
         self.current_voting_type = 'rtv'
         
         total_players = len(self.players)
         
-        # Simple Yes/No voting options
-        self.voting_options = {
-            1: {'count': 0, 'priority': 0, 'value': 'yes', 'display': 'Yes'},
-            2: {'count': 0, 'priority': 0, 'value': 'no', 'display': 'No'}
-        }
+        # Get map choices from nominations (like original rtvrtm.py)
+        nominated_maps = [p[3] for p in self.players.values() if p[3]]
         
-        # Announce voting - match original rtvrtm.py format
+        # If no nominations, get random maps from available
+        if not nominated_maps:
+            available = [m for m in self.maps if m not in self.recently_played] or self.maps
+            import random
+            map_choices = random.sample(available, min(5, len(available)))
+        else:
+            # Count nominations and get top maps
+            from collections import Counter
+            counts = Counter(nominated_maps)
+            # Get maps sorted by nomination count (highest first), then priority
+            map_choices = [m for m, c in counts.most_common(5)]
+        
+        # Create voting options from map choices (like original rtvrtm.py)
+        self.voting_options = {}
+        for i, map_name in enumerate(map_choices, 1):
+            self.voting_options[i] = {'count': 0, 'priority': 0, 'value': map_name, 'display': map_name}
+        
+        # Add "Don't change" option
+        self.voting_options[len(map_choices) + 1] = {'count': 0, 'priority': 0, 'value': None, 'display': "Don't change"}
+        
+        # Announce voting with map choices - match original rtvrtm.py format
+        votes_display = ', '.join('%i(%i): %s' % (i, 0, m) for i, m in enumerate(map_choices, 1))
+        votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
-        self.instance.say('^2[Votes] ^71(0): Yes, 2(0): No')
+        self.instance.say('^2[Votes] ^7' + votes_display)
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -335,21 +354,37 @@ class plugin:
             self.start_rtm_voting()
 
     def start_rtm_voting(self):
-        """Start RTM voting process - Yes/No vote"""
+        """Start RTM voting process - show mode choices"""
         self.voting_active = True
         self.current_voting_type = 'rtm'
         
         total_players = len(self.players)
         
-        # Simple Yes/No voting options
-        self.voting_options = {
-            1: {'count': 0, 'priority': 0, 'value': 'yes', 'display': 'Yes'},
-            2: {'count': 0, 'priority': 0, 'value': 'no', 'display': 'No'}
-        }
+        # Get mode choices from RTM votes (like original rtvrtm.py)
+        requested_modes = [v.get('mode', 0) for v in self.rtm_votes.values()]
         
-        # Announce voting - match original rtvrtm.py format
+        # Get unique modes requested, excluding current mode
+        current_mode = getattr(self, 'current_mode', 0)
+        mode_choices = [m for m in set(requested_modes) if m != current_mode][:5]  # Max 5 modes
+        
+        if not mode_choices:
+            # Fallback to all available modes if no specific requests
+            mode_choices = [m for m in self.modes.keys() if m != current_mode][:5]
+        
+        # Create voting options from mode choices (like original rtvrtm.py)
+        self.voting_options = {}
+        for i, mode in enumerate(mode_choices, 1):
+            mode_name = self.modes.get(mode, 'Unknown')
+            self.voting_options[i] = {'count': 0, 'priority': 0, 'value': mode, 'display': mode_name}
+        
+        # Add "Don't change" option
+        self.voting_options[len(mode_choices) + 1] = {'count': 0, 'priority': 0, 'value': None, 'display': "Don't change"}
+        
+        # Announce voting with mode choices - match original rtvrtm.py format
+        votes_display = ', '.join('%i(%i): %s' % (i, 0, self.modes.get(m, str(m))) for i, m in enumerate(mode_choices, 1))
+        votes_display += ', %i(0): Don\'t change' % (len(mode_choices) + 1)
         self.instance.say('^2[RTM] ^7Type !number to vote. Voting will complete in ^21^7 rounds (0/' + str(total_players) + ').')
-        self.instance.say('^2[Votes] ^71(0): Yes, 2(0): No')
+        self.instance.say('^2[Votes] ^7' + votes_display)
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -612,11 +647,14 @@ class plugin:
         # Update voting message with current counts (like original rtvrtm.py)
         yes_votes = self.voting_options.get(1, {}).get('count', 0)
         no_votes = self.voting_options.get(2, {}).get('count', 0)
+        # Update voting message with current counts (generic for any voting options)
         total_players = len(self.players)
         voted_count = len(self.players_voted)
         voting_name = self.current_voting_type.upper()
+        votes_display = ', '.join('%i(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
+                                  for opt_num, opt_data in sorted(self.voting_options.items()))
         self.instance.say('^2[%s] ^7Type !number to vote. Voting will complete in ^21^7 rounds (%i/%i).' % (voting_name, voted_count, total_players))
-        self.instance.say('^2[Votes] ^71(%i): Yes, 2(%i): No' % (yes_votes, no_votes))
+        self.instance.say('^2[Votes] ^7' + votes_display)
         
         # Check if voting should end (all players voted or time expired)
         self.check_voting_end()
@@ -653,30 +691,41 @@ class plugin:
         if not (time_expired or all_voted):
             return
         
-        # Execute result - Yes/No voting
-        yes_votes = self.voting_options.get(1, {}).get('count', 0)
-        no_votes = self.voting_options.get(2, {}).get('count', 0)
+        # Find winning option (like original rtvrtm.py)
+        winning_option = None
+        max_votes = -1
+        for opt_num, opt_data in sorted(self.voting_options.items()):
+            if opt_data['count'] > max_votes:
+                max_votes = opt_data['count']
+                winning_option = opt_num
+        
+        winning_value = self.voting_options[winning_option]['value']
+        winning_display = self.voting_options[winning_option]['display']
         
         if self.current_voting_type == 'rtv':
-            if yes_votes > no_votes:
-                # Yes wins
+            if winning_value is None:
+                # "Don't change" option won
+                self.instance.say('^2[RTV] ^7Voting complete - majority chose to keep current map.')
+                self.rtv_votes = {}
+            else:
+                # Map change wins
+                self.instance.say('^2[RTV] ^7Voting complete - ^1%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
                 if self.rtv_queued:
                     self.queue_rtv_change()
                 else:
                     self.execute_rtv_immediate()
-            else:
-                self.instance.say('^2[RTV] ^7Voting failed - majority voted No.')
-                self.rtv_votes = {}
         elif self.current_voting_type == 'rtm':
-            if yes_votes > no_votes:
-                # Yes wins
+            if winning_value is None:
+                # "Don't change" option won
+                self.instance.say('^2[RTM] ^7Voting complete - majority chose to keep current mode.')
+                self.rtm_votes = {}
+            else:
+                # Mode change wins
+                self.instance.say('^2[RTM] ^7Voting complete - ^1%s ^7wins with ^1%i ^7votes!' % (winning_display, max_votes))
                 if self.rtm_queued:
                     self.queue_rtm_change()
                 else:
                     self.execute_rtm_immediate()
-            else:
-                self.instance.say('^2[RTM] ^7Voting failed - majority voted No.')
-                self.rtm_votes = {}
         
         # End voting
         self.voting_active = False
