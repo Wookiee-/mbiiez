@@ -281,7 +281,6 @@ class plugin:
         # If no nominations, get random maps from available
         if not nominated_maps:
             available = [m for m in self.maps if m not in self.recently_played] or self.maps
-            import random
             map_choices = random.sample(available, min(5, len(available)))
         else:
             # Count nominations and get top maps
