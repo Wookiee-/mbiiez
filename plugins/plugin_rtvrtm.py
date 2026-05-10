@@ -12,7 +12,6 @@ Ported from the original rtvrtm.py to Python 3 and integrated as a mbiiEZ plugin
 import time
 import random
 from datetime import datetime
-from collections import defaultdict
 
 VERSION = '3.6c_py3'
 MAPLIST_MAX_SIZE = 750
@@ -157,7 +156,7 @@ class plugin:
             return
         
         # Unvote command (during active voting)
-        if message == '!unvote' or message == '!unvote':
+        if message == '!unvote':
             self.handle_unvote(player_id)
             return
         
@@ -525,8 +524,8 @@ class plugin:
         available_maps = [
             m for m in all_maps 
             if m.lower() != current_map.lower() and 
-            (not hasattr(self, 'recently_played') or m not in self.recently_played or 
-             self.recently_played.get(m, 0) <= current_time)
+            (m not in self.recently_played or 
+             self.recently_played_dict.get(m, 0) <= current_time)
         ]
         
         if not available_maps:
@@ -603,11 +602,7 @@ class plugin:
         self.players_voted[player_id] = vote_number
         self.voting_options[vote_number]['count'] += 1
         
-        # Announce vote - player_data is list [timer, rtv_vote, rtm_vote, nomination, vote_option]
-        player_name = 'Player %s' % player_id  # Fallback name
-        if player_id in self.players:
-            # Can't get name from player_data since we don't store it
-            pass
+        # Announce vote
         self.instance.say('^3[Voting] ^7Player ^1%s ^7voted for ^1%s' % (player_id, self.voting_options[vote_number]['display']))
         
         # Check if voting should end (all players voted or time expired)
@@ -632,6 +627,9 @@ class plugin:
     
     def check_voting_end(self):
         """Check if voting should end and execute result"""
+        if not self.voting_active:
+            return
+            
         total_players = len(self.players)
         voted_count = len(self.players_voted)
         
@@ -685,25 +683,6 @@ class plugin:
             self.recently_played.insert(0, map_name)
             if len(self.recently_played) > self.recently_played_max:
                 self.recently_played.pop()
-    
-    def handle_maplist(self, player_id, page):
-        """Show map list with pagination"""
-        if not self.maps:
-            self.instance.tell(player_id, '^2[Voting] ^7Map voting is unavailable.')
-            return
-        
-        # Combine maps and secondary maps
-        all_maps = list(self.maps) + list(self.secondary_maps if self.secondary_maps else [])
-        current_map = self.current_map
-        
-        # Filter out current map and recently played
-        current_time = time.time()
-        available_maps = [
-            m for m in all_maps 
-            if m.lower() != current_map.lower() and 
-            (m not in self.recently_played or 
-             self.recently_played_dict.get(m, 0) <= current_time)
-        ]
 
     def before_dedicated_server_launch(self):
         """Called before dedicated server starts"""
