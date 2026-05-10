@@ -617,7 +617,7 @@ class plugin:
             self.instance.say('^2[Voting] ^7Map voting is unavailable.')
             return
             
-        current_map = self.current_map
+        current_map = self.current_map or ''
         
         # Filter out current map and recently played
         current_time = time.time()
@@ -627,10 +627,6 @@ class plugin:
             (m not in self.recently_played or 
              self.recently_played_dict.get(m, 0) <= current_time)
         ]
-        
-        if not available_maps:
-            self.instance.say('^2[Maplist] ^7No map is currently available for nomination.')
-            return
             
         # Sort maps
         available_maps.sort(key=lambda x: x.lower())
@@ -665,7 +661,8 @@ class plugin:
         if not expression:
             self.instance.say('^2[Search] ^7Usage: !search expression')
             return
-        current_map = self.current_map
+        
+        current_map = self.current_map or ''
         
         # Filter out current map
         available_maps = [m for m in all_maps if m.lower() != current_map.lower()]
