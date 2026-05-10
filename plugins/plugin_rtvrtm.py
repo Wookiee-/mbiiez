@@ -279,6 +279,9 @@ class plugin:
         # Get all available maps (primary + secondary)
         all_maps = list(self.maps) + list(self.secondary_maps if self.secondary_maps else [])
         
+        # Show map count in-game for debugging
+        self.instance.console.rcon('svsay ^2[RTV] ^7Maps loaded: ^1' + str(len(all_maps)))
+        
         # If no nominations, get random maps from available
         if not nominated_maps:
             available = [m for m in all_maps if m not in self.recently_played] or all_maps
