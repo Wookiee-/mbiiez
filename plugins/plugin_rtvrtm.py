@@ -258,6 +258,11 @@ class plugin:
         if total_players == 0:
             return  # Silent reject - no players to vote
             
+        # Check if player already voted (like original rtvrtm.py)
+        if player_id in self.rtv_votes:
+            self.instance.say('^2[RTV] ^7%s ^7already wanted to rock the vote (%i/%i).' % (player_name, len(self.rtv_votes), max(int(total_players * self.rtv_rate / 100), self.rtv_min_votes)))
+            return
+            
         # Add vote
         self.rtv_votes[player_id] = {'name': player_name}
         
@@ -292,7 +297,9 @@ class plugin:
         # If no nominations, get random maps from available
         if not nominated_maps:
             available = [m for m in all_maps if m not in self.recently_played] or all_maps
+            self.instance.say('^2[RTV] ^7Selecting ^1' + str(min(5, len(available))) + '^7 random maps from ^1' + str(len(available)) + '^7 available')
             map_choices = random.sample(available, min(5, len(available)))
+            self.instance.say('^2[RTV] ^7Selected: ^1' + ', '.join(map_choices))
         else:
             # Count nominations and get top maps
             from collections import Counter
