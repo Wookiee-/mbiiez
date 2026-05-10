@@ -280,11 +280,17 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
 | `rtm_queued` | RTM changes at round end (true) or immediately (false) | `true` |
 
 **How RTV/RTM Works:**
-- Players vote `!rtv` or `!rtm` to initiate
-- When threshold is reached, a Yes/No vote starts (`!1` = Yes, `!2` = No)
-- If Yes wins and `rtv_queued`/`rtm_queued` is `true`: change happens at next map change (round end)
-- If Yes wins and `rtv_queued`/`rtm_queued` is `false`: change happens immediately
-- RTV changes to the most nominated map (or random if no nominations); RTM changes to the most requested mode
+- **RTV:** Players use `!nominate <map>` or `!nom <map>` to nominate maps before voting. Use `!maplist` or `!search <expression>` to see available maps.
+- **RTM:** Players use `!rtm <mode>` to request a mode (0=Open, 1=Semi-Authentic, 2=Full-Authentic, 3=Duel, 4=Legends)
+- When threshold is reached, a voting starts with map/mode choices:
+  - RTV shows map choices from nominations (or random maps if none nominated)
+  - RTM shows mode choices from RTM votes
+  - Players vote with `!1`, `!2`, etc. to pick their preferred option
+  - "Don't change" option is available
+- Voting uses round-based countdown (1 round by default)
+- The option with most votes wins
+- If `rtv_queued`/`rtm_queued` is `true`: change happens at next map change (round end)
+- If `rtv_queued`/`rtm_queued` is `false`: change happens immediately
 
 #### Auto Message Plugin
 ```json
