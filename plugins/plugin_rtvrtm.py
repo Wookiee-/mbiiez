@@ -548,12 +548,16 @@ class plugin:
             return
             
         if player_id not in self.rtv_votes:
+            required = int(len(self.players) * self.rtv_rate / 100)
+            if required < 1:
+                required = 1
             self.instance.say('^2[RTV] ^7%s ^7didn\'t want to rock the vote yet (^2%i^7/^2%i^7).' %
-                (player_name, len(self.rtv_votes), max(int(len(self.players) * self.rtv_rate / 100), self.rtv_min_votes)))
+                (player_name, len(self.rtv_votes), required))
             return
             
-        del self.rtv_votes[player_id]            self.instance.say('^2[RTV] ^7%s ^7no longer wants to rock the vote (^2%i^7/^2%i^7).' %
-            (player_name, len(self.rtv_votes), max(int(len(self.players) * self.rtv_rate / 100), self.rtv_min_votes)))
+        del self.rtv_votes[player_id]
+        self.instance.say('^2[RTV] ^7%s ^7no longer wants to rock the vote (^2%i^7/^2%i^7).' %
+            (player_name, len(self.rtv_votes), required))
 
     def handle_unrtm(self, player_id, player_name):
         """Handle unRTM - remove RTM vote"""
