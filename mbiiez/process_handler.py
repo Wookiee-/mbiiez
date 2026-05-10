@@ -242,7 +242,9 @@ class process_handler:
         
         # 4. Clear DB
         db().execute("delete from processes where instance = '{}'".format(instance_name))
-        print(bcolors.RED + f"Instance {instance_name} (Port {port}) fully terminated." + bcolors.ENDC)    def stop_process_name(self, name):
+        print(bcolors.RED + f"Instance {instance_name} (Port {port}) fully terminated." + bcolors.ENDC)
+
+    def stop_process_name(self, name):
         """
         Stops all processes by its name within this instance
         """         
