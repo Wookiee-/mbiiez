@@ -104,6 +104,10 @@ class plugin:
             self.instance.log_handler.log('[RTV/RTM] RTV is enabled')
         if self.rtm_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTM is enabled')
+        # Debug: log how many maps are loaded
+        self.instance.log_handler.log('[RTV/RTM] primary_maps from config: ' + str(len(self.maps)) + ' maps')
+        if self.maps:
+            self.instance.log_handler.log('[RTV/RTM] First 5 maps: ' + str(self.maps[:5]))
             
     def on_new_log_line(self, args):
         """Handle new log lines - for parsing RTV triggers from game log"""
@@ -273,12 +277,17 @@ class plugin:
         
         total_players = len(self.players)
         
+        # Debug logging
+        self.instance.log_handler.log('[RTV] start_rtv_voting called - total_players=%d, self.maps count=%d' % (total_players, len(self.maps)))
+        
         # Get map choices from nominations (like original rtvrtm.py)
         nominated_maps = [p[3] for p in self.players.values() if p[3]]
+        self.instance.log_handler.log('[RTV] nominated_maps: ' + str(nominated_maps))
         
         # If no nominations, get random maps from available
         if not nominated_maps:
             available = [m for m in self.maps if m not in self.recently_played] or self.maps
+            self.instance.log_handler.log('[RTV] No nominations, available maps: ' + str(available[:5]))
             map_choices = random.sample(available, min(5, len(available)))
         else:
             # Count nominations and get top maps
@@ -286,6 +295,8 @@ class plugin:
             counts = Counter(nominated_maps)
             # Get maps sorted by nomination count (highest first), then priority
             map_choices = [m for m, c in counts.most_common(5)]
+        
+        self.instance.log_handler.log('[RTV] map_choices selected: ' + str(map_choices))
         
         # Create voting options from map choices (like original rtvrtm.py)
         self.voting_options = {}
