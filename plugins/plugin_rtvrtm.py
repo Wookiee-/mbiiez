@@ -782,31 +782,6 @@ class plugin:
         self.instance.say('^3[RTM] ^7Mode changed to ^2%s.' % mode_name)
         self.instance.log_handler.log('[RTM] Vote successful - Changed mode to ' + mode_name)
     
-    def execute_rtm_requested(self):
-        """Execute RTM - change to the most requested mode"""
-        self.last_vote_time = time.time()
-        
-        # Find the most requested mode from RTM votes
-        mode_counts = {}
-        for vote_data in self.rtm_votes.values():
-            m = vote_data.get('mode', 0)
-            mode_counts[m] = mode_counts.get(m, 0) + 1
-        
-        if not mode_counts:
-            mode = 0  # Default to Open if no votes somehow
-        else:
-            # Get mode with highest count
-            mode = max(mode_counts.items(), key=lambda x: x[1])[0]
-        
-        self.rtm_votes = {}  # Clear votes after execution
-        
-        mode_name = self.modes.get(mode, 'Unknown')
-        self.instance.say('^3[RTM] ^1Rock the Mode ^3successful! Changing to ^2' + mode_name)
-        self.instance.log_handler.log('[RTM] Vote successful - Changing to mode ' + str(mode))
-        
-        # Change mode
-        self.instance.mode(mode)
-
     def before_dedicated_server_launch(self):
         """Called before dedicated server starts"""
         self.instance.log_handler.log('[RTV/RTM] Server launch preparation complete')
