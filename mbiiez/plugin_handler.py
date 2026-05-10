@@ -28,9 +28,6 @@ class plugin_handler:
         
         sys.path.insert(0, settings.locations.plugins_path)
 
-        # Debug: show plugins being looked for
-        print("[PLUGIN_HANDLER] Looking for plugins: " + str(plugins))
-
         self.discovered_plugins = {
             name: importlib.import_module(name)
             for finder, name, ispkg
@@ -38,9 +35,6 @@ class plugin_handler:
             if name in plugins
         }
         
-        # Debug: show what was discovered
-        print("[PLUGIN_HANDLER] Discovered plugins: " + str(list(self.discovered_plugins.keys())))
-
         for p in self.discovered_plugins:
             plugin = self.discovered_plugins[p].plugin(self.instance)
             if(hasattr(plugin, 'register')):
