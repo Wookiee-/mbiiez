@@ -243,45 +243,18 @@ class plugin:
             self.start_rtv_voting()
     
     def start_rtv_voting(self):
-        """Start RTV voting process - pick nominated maps and start voting"""
+        """Start RTV voting process - Yes/No vote"""
         self.voting_active = True
         self.current_voting_type = 'rtv'
         
-        # Get nominated maps - players stored as list [timer, rtv_vote, rtm_vote, nomination, vote_option]
-        nominated_maps = []
-        for player_data in self.players.values():
-            if player_data[3]:  # index 3 is nomination
-                nominated_maps.append(player_data[3])
-        
-        if not nominated_maps:
-            # No nominations - pick random from available
-            available_maps = [m for m in self.maps if m not in self.recently_played]
-            if not available_maps:
-                available_maps = self.maps
-            self.voting_options = {
-                1: {'count': 0, 'priority': 0, 'value': random.choice(available_maps), 'display': random.choice(available_maps)},
-                2: {'count': 0, 'priority': 0, 'value': 'dontchange', 'display': "Don't change"}
-            }
-        else:
-            # Use nominated maps - count nominations per map
-            map_counts = {}
-            for m in nominated_maps:
-                map_counts[m] = map_counts.get(m, 0) + 1
-            
-            # Sort by count (priority) and pick top maps
-            sorted_maps = sorted(map_counts.items(), key=lambda x: x[1], reverse=True)
-            
-            self.voting_options = {}
-            for i, (map_name, count) in enumerate(sorted_maps[:4], 1):
-                self.voting_options[i] = {'count': 0, 'priority': count, 'value': map_name, 'display': map_name}
-            
-            # Add "Don't change" option
-            self.voting_options[len(self.voting_options) + 1] = {'count': 0, 'priority': 0, 'value': 'dontchange', 'display': "Don't change"}
+        # Simple Yes/No voting options
+        self.voting_options = {
+            1: {'count': 0, 'priority': 0, 'value': 'yes', 'display': 'Yes'},
+            2: {'count': 0, 'priority': 0, 'value': 'no', 'display': 'No'}
+        }
         
         # Announce voting
-        options_str = ', '.join(['^1%i^3: ^7%s' % (k, v['display']) for k, v in self.voting_options.items()])
-        self.instance.say('^3[RTV] ^7Voting started! Cast your vote: ^1!1^7-^1!%i' % (len(self.voting_options)))
-        self.instance.say('^2[Options] ^7%s' % options_str)
+        self.instance.say('^3[RTV] ^7Voting started! Cast your vote: ^1!1^7 for Yes, ^1!2^7 for No')
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -333,32 +306,18 @@ class plugin:
             self.start_rtm_voting()
 
     def start_rtm_voting(self):
-        """Start RTM voting process - show mode options and let players vote"""
+        """Start RTM voting process - Yes/No vote"""
         self.voting_active = True
         self.current_voting_type = 'rtm'
         
-        # Count votes per mode to determine what options to show
-        mode_counts = {}
-        for vote_data in self.rtm_votes.values():
-            m = vote_data.get('mode', 0)
-            mode_counts[m] = mode_counts.get(m, 0) + 1
-        
-        # Sort by count (priority) and pick top modes
-        sorted_modes = sorted(mode_counts.items(), key=lambda x: x[1], reverse=True)
-        
-        # Build voting options from top voted modes (max 4 modes + Don't change)
-        self.voting_options = {}
-        for i, (mode_num, count) in enumerate(sorted_modes[:4], 1):
-            mode_name = self.modes.get(mode_num, 'Unknown')
-            self.voting_options[i] = {'count': 0, 'priority': count, 'value': mode_num, 'display': mode_name}
-        
-        # Add "Don't change" option
-        self.voting_options[len(self.voting_options) + 1] = {'count': 0, 'priority': 0, 'value': 'dontchange', 'display': "Don't change"}
+        # Simple Yes/No voting options
+        self.voting_options = {
+            1: {'count': 0, 'priority': 0, 'value': 'yes', 'display': 'Yes'},
+            2: {'count': 0, 'priority': 0, 'value': 'no', 'display': 'No'}
+        }
         
         # Announce voting
-        options_str = ', '.join(['^1%i^3: ^7%s' % (k, v['display']) for k, v in self.voting_options.items()])
-        self.instance.say('^3[RTM] ^7Voting started! Cast your vote: ^1!1^7-^1!%i' % (len(self.voting_options)))
-        self.instance.say('^2[Options] ^7%s' % options_str)
+        self.instance.say('^3[RTM] ^7Voting started! Cast your vote: ^1!1^7 for Yes, ^1!2^7 for No')
         
         self.voting_start_time = time.time()
         self.players_voted = {}
@@ -663,41 +622,77 @@ class plugin:
         
         winning_value = self.voting_options[winning_option]['value']
         
-        # Execute result
+        # Execute result - Yes/No voting
+        yes_votes = self.voting_options.get(1, {}).get('count', 0)
+        no_votes = self.voting_options.get(2, {}).get('count', 0)
+        
         if self.current_voting_type == 'rtv':
-            if winning_value == 'dontchange':
-                self.instance.say('^3[RTV] ^7Voting failed - majority chose to stay.')
+            if yes_votes > no_votes:
+                # Yes wins - change to random map
+                self.execute_rtv_random()
+            else:
+                self.instance.say('^3[RTV] ^7Voting failed - majority voted No.')
                 self.rtv_votes = {}
-            else:
-                self.execute_rtv_with_map(winning_value)
         elif self.current_voting_type == 'rtm':
-            if winning_value == 'dontchange':
-                self.instance.say('^3[RTM] ^7Voting failed - majority chose to stay.')
-                self.rtm_votes = {}
+            if yes_votes > no_votes:
+                # Yes wins - change to most requested mode
+                self.execute_rtm_requested()
             else:
-                self.execute_rtm(int(winning_value))
+                self.instance.say('^3[RTM] ^7Voting failed - majority voted No.')
+                self.rtm_votes = {}
         
         # End voting
         self.voting_active = False
         self.voting_options = {}
         self.players_voted = {}
     
-    def execute_rtv_with_map(self, map_name):
-        """Execute RTV with specific map"""
+    def execute_rtv_random(self):
+        """Execute RTV - change to random map"""
         self.last_vote_time = time.time()
         self.rtv_votes = {}  # Clear votes after execution
         
-        self.instance.say('^3[RTV] ^1Rock the Vote ^3successful! Changing to ^2' + map_name)
-        self.instance.log_handler.log('[RTV] Vote successful - Changing to ' + map_name)
+        # Pick random map from available
+        available_maps = [m for m in self.maps if m not in self.recently_played]
+        if not available_maps:
+            available_maps = self.maps
+        new_map = random.choice(available_maps)
+        
+        self.instance.say('^3[RTV] ^1Rock the Vote ^3successful! Changing to ^2' + new_map)
+        self.instance.log_handler.log('[RTV] Vote successful - Changing to ' + new_map)
         
         # Change map
-        self.instance.map(map_name)
+        self.instance.map(new_map)
         
         # Add to recently played
-        if map_name not in self.recently_played:
-            self.recently_played.insert(0, map_name)
+        if new_map not in self.recently_played:
+            self.recently_played.insert(0, new_map)
             if len(self.recently_played) > self.recently_played_max:
                 self.recently_played.pop()
+    
+    def execute_rtm_requested(self):
+        """Execute RTM - change to the most requested mode"""
+        self.last_vote_time = time.time()
+        
+        # Find the most requested mode from RTM votes
+        mode_counts = {}
+        for vote_data in self.rtm_votes.values():
+            m = vote_data.get('mode', 0)
+            mode_counts[m] = mode_counts.get(m, 0) + 1
+        
+        if not mode_counts:
+            mode = 0  # Default to Open if no votes somehow
+        else:
+            # Get mode with highest count
+            mode = max(mode_counts.items(), key=lambda x: x[1])[0]
+        
+        self.rtm_votes = {}  # Clear votes after execution
+        
+        mode_name = self.modes.get(mode, 'Unknown')
+        self.instance.say('^3[RTM] ^1Rock the Mode ^3successful! Changing to ^2' + mode_name)
+        self.instance.log_handler.log('[RTM] Vote successful - Changing to mode ' + str(mode))
+        
+        # Change mode
+        self.instance.mode(mode)
 
     def before_dedicated_server_launch(self):
         """Called before dedicated server starts"""
