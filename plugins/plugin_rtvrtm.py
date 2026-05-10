@@ -291,8 +291,11 @@ class plugin:
         # Get all available maps (primary + secondary)
         all_maps = list(self.maps) + list(self.secondary_maps if self.secondary_maps else [])
         
-        # Show map count in-game so user can see what's happening
-        self.instance.say('^2[RTV] ^7Maps loaded: ^1' + str(len(all_maps)) + ' ^7(primary: ^1' + str(len(self.maps)) + '^7, secondary: ^1' + str(len(self.secondary_maps or [])) + '^7)')
+        # Debug: show raw map lists
+        self.instance.say('^2[RTV] ^7DEBUG: self.maps = ^1' + str(self.maps))
+        self.instance.say('^2[RTV] ^7DEBUG: self.secondary_maps = ^1' + str(self.secondary_maps))
+        self.instance.say('^2[RTV] ^7DEBUG: all_maps = ^1' + str(all_maps))
+        self.instance.say('^2[RTV] ^7DEBUG: recently_played = ^1' + str(self.recently_played))
         
         # If no nominations, get random maps from available
         if not nominated_maps:
