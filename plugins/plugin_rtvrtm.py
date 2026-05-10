@@ -76,10 +76,9 @@ class plugin:
         self.recently_played_max = 5
         self.nomination_order = []  # List of player_ids in nomination order
         
-        # Maps from plugins.rtvrtm config section (not at root level)
-        rtvrtm_config = instance.config.get('plugins', {}).get('rtvrtm', {})
-        self.maps = rtvrtm_config.get('primary_maps', [])
-        self.secondary_maps = rtvrtm_config.get('secondary_maps', [])
+        # Maps from instance config - debug what's actually being loaded
+        self.maps = instance.config.get('primary_maps', [])
+        self.secondary_maps = instance.config.get('secondary_maps', [])
         
         # Debug: Log what's in config at root level
         instance.log_handler.log('[RTV/RTM] Config keys: ' + str(list(instance.config.keys())[:10]))
