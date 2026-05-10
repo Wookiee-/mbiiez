@@ -205,7 +205,7 @@ class plugin:
         if self.pending_change:
             if self.pending_change['type'] == 'map':
                 map_name = self.pending_change['value']
-                self.instance.say('^2[RTV] ^1Rock the Vote ^3executing! Changing to ^2' + map_name)
+                self.instance.say('^2[RTV] ^7Rock the Vote ^3executing! Changing to ^2' + map_name)
                 self.instance.log_handler.log('[RTV] Executing queued map change to ' + map_name)
                 # Map change already in progress - don't call instance.map() again
                 # Just update recently_played
@@ -260,7 +260,7 @@ class plugin:
             
         # Check if player already voted (like original rtvrtm.py)
         if player_id in self.rtv_votes:
-            self.instance.say('^2[RTV] ^7%s ^7already wanted to rock the vote (%i/%i).' % (player_name, len(self.rtv_votes), max(int(total_players * self.rtv_rate / 100), self.rtv_min_votes)))
+            self.instance.say('^2[RTV] ^7%s ^7already wanted to rock the vote (^2%i^7/^2%i^7).' % (player_name, len(self.rtv_votes), required))
             return
             
         # Add vote
@@ -273,7 +273,7 @@ class plugin:
         current = len(self.rtv_votes)
         
         # Broadcast who wants to rock the vote (like original rtvrtm.py)
-        self.instance.say('^2[RTV] ^7%s ^7wants to rock the vote (%i/%i).' % (player_name, current, required))
+        self.instance.say('^2[RTV] ^7%s ^7wants to rock the vote (^2%i^7/^2%i^7).' % (player_name, current, required))
 
         # Check if enough votes to start voting
         if current >= required:
@@ -322,7 +322,7 @@ class plugin:
         votes_display += ', %i(0): Don\'t change' % (len(map_choices) + 1)
         
         # Broadcast voting messages
-        self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
+        self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (^2%i^7/^2%s^7).' % (0, total_players))
         self.instance.say('^2[Votes] ^7' + votes_display)
         
         self.voting_start_time = time.time()
@@ -548,12 +548,11 @@ class plugin:
             return
             
         if player_id not in self.rtv_votes:
-            self.instance.say('^2[RTV] ^7%s ^7didn\'t want to rock the vote yet (%i/%i).' %
+            self.instance.say('^2[RTV] ^7%s ^7didn\'t want to rock the vote yet (^2%i^7/^2%i^7).' %
                 (player_name, len(self.rtv_votes), max(int(len(self.players) * self.rtv_rate / 100), self.rtv_min_votes)))
             return
             
-        del self.rtv_votes[player_id]
-        self.instance.say('^2[RTV] ^7%s ^7no longer wants to rock the vote (%i/%i).' %
+        del self.rtv_votes[player_id]            self.instance.say('^2[RTV] ^7%s ^7no longer wants to rock the vote (^2%i^7/^2%i^7).' %
             (player_name, len(self.rtv_votes), max(int(len(self.players) * self.rtv_rate / 100), self.rtv_min_votes)))
 
     def handle_unrtm(self, player_id, player_name):
@@ -652,7 +651,7 @@ class plugin:
             return
         
         if vote_number not in self.voting_options:
-            self.instance.say('^2[Voting] ^7Invalid vote option. Use ^1!1^7-^1!%i' % len(self.voting_options))
+            self.instance.say('^2[Voting] ^7Invalid vote option. Use ^2!1^7-^2!%i' % len(self.voting_options))
             return
         
         # Check if already voted
@@ -665,7 +664,7 @@ class plugin:
         self.voting_options[vote_number]['count'] += 1
         
         # Announce vote
-        self.instance.say('^2[Voting] ^7%s ^1voted for ^1%s' % (player_name, self.voting_options[vote_number]['display']))
+        self.instance.say('^2[Voting] ^7%s ^7voted for ^2%s' % (player_name, self.voting_options[vote_number]['display']))
         
         # Update voting message with current counts using rcon directly (like original rtvrtm.py)
         total_players = len(self.players)
