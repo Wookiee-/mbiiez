@@ -1,46 +1,94 @@
 @echo off
-REM Moviebattles II EZ Installer Tool - Windows Version
-REM This script installs dependencies and configures MBIIEZ on Windows
+REM Moviebattles II EZ Installer Tool - Enhanced Windows Version
+REM Enhanced with colors, status checks, and progress indicators
 
 setlocal enabledelayedexpansion
 
+REM Enable ANSI colors on Windows 10+
+reg add HKCU\\Console /v VirtualTerminalLevel /t REG_DWORD /d 1 /f >nul 2>&1
+
+REM Colors (using escape sequence trick for batch)
+for /f %%A in ('copy /Z /Y nul nul 2^>nul') do set BS=%%A
+
+REM Box drawing characters
+set BOX_H=-
+set BOX_V=|
+set BOX_TL=+
+set BOX_TR=+
+set BOX_BL=+
+set BOX_BR=+
+set BOX_RT=+
+set BOX_LT=+
+set BOX_TT=+
+set BOX_BT=+
+set BOX_CRS=+
+
 REM Get script directory
 set SCRIPTPATH=%~dp0
-REM Remove trailing backslash
 set SCRIPTPATH=%SCRIPTPATH:~0,-1%
 
-REM Default paths (can be customized)
+REM Default paths
 set OPENJKPATH=%USERPROFILE%\nakedjk
 set MBIIPATH=%OPENJKPATH%\naked
-set MBIIDIR=%USERPROFILE%\.mbiiez
+set MBIIDIR=%USERPROFILE%^.mbiiez
 
+REM ========================
+REM Status Functions
+REM ========================
+:status_ok
+echo     [OK] %~1
+exit /b 0
+
+:status_warn
+echo     [WARN] %~1
+exit /b 0
+
+:status_error
+echo     [ERROR] %~1
+exit /b 0
+
+:info_msg
+echo     [INFO] %~1
+exit /b 0
+
+:complete_progress
+echo     [DONE] %~1
+exit /b 0
+
+:print_header
+echo.
+echo    +---------------------------------------------------+
+echo    ^|           MovieBattles II EZ Installer            ^|
+echo    ^|              Enhanced Windows Menu                ^|
+echo    +---------------------------------------------------+
+echo.
+exit /b 0
+
+REM ========================
+REM Menu
+REM ========================
 :menu
 cls
-echo *************************************************
-echo       Moviebattles II EZ Installer Tool
-echo            Windows Installation
-echo *************************************************
+call :print_header
 echo.
-echo Current paths:
-echo   Script: %SCRIPTPATH%
-echo   OpenJK: %OPENJKPATH%
-echo   MBIIDir: %MBIIDIR%
+echo                      Main Menu
+echo    =================================================
 echo.
-echo Select an option:
+echo    1. Install Python Dependencies
+echo    2. Check System Dependencies
+echo    3. Setup Directory Structure
+echo    4. Setup RTVRTM
+echo    5. Create MBII Launcher
+echo    6. Install MBII Updater
+echo    7. Update MBII
+echo    8. Show Installation Status
+echo    9. Quick Install (Run 1-5)
 echo.
-echo   [1] Install Python Dependencies
-echo   [2] Check/Install System Dependencies
-echo   [3] Setup MBIIEZ Directory Structure
-echo   [4] Setup RTVRTM
-echo   [5] Create MBII Launcher
-echo   [6] Install MBII Updater
-echo   [7] Update MBII
-echo   [8] Full Install (All Steps)
-echo   [9] Show Current Configuration
-echo  [10] Exit
+echo    0. Exit
 echo.
-
-set /p CHOICE=Enter your choice (1-10): 
+echo    =================================================
+echo.
+set /p CHOICE=Enter your choice [0-9]: 
 
 if /i '%CHOICE%'=='1' goto :install_python
 if /i '%CHOICE%'=='2' goto :install_sysdeps
@@ -49,99 +97,101 @@ if /i '%CHOICE%'=='4' goto :setup_rtvrtm
 if /i '%CHOICE%'=='5' goto :create_launcher
 if /i '%CHOICE%'=='6' goto :install_updater
 if /i '%CHOICE%'=='7' goto :update_mbii
-if /i '%CHOICE%'=='8' goto :full_install
-if /i '%CHOICE%'=='9' goto :show_config
-if /i '%CHOICE%'=='10' goto :exit_menu
-echo Invalid option. Please try again.
+if /i '%CHOICE%'=='8' goto :show_status
+if /i '%CHOICE%'=='9' goto :quick_install
+if /i '%CHOICE%'=='0' goto :exit_menu
+echo    Invalid option. Please try again.
 timeout /t 2 >nul
 goto :menu
 
+REM ========================
+REM Install Python Dependencies
+REM ========================
 :install_python
 cls
-echo ================================================
-echo Installing Python Dependencies
-echo ================================================
 echo.
-echo This will install the following packages:
-echo   - psutil     (process/system utilities)
-echo   - prettytable (CLI output formatting)
-echo   - six        (Python 2/3 compatibility)
-echo   - watchgod   (auto-reload for development)
-echo   - tailer     (log file watching)
-echo   - urllib3    (HTTP library)
-echo   - flask      (web framework)
-echo   - flask_httpauth (API authentication)
-echo   - flask-socketio (WebSocket support)
-echo   - sqlite3      (VPN Monitor - built into Python 3)
+echo    =================================================
+echo    Installing Python Dependencies
+echo    =================================================
 echo.
-echo Note: psutil is required for Windows support
+call :info_msg Installing required Python packages...
 echo.
-set /p CONFIRM=Continue with installation? (Y/N): 
-if /i not '%CONFIRM%'=='Y' goto :menu
-
+echo    Packages: psutil, prettytable, six, watchgod, tailer,
+echo             urllib3, flask, flask_httpauth, flask-socketio, discord.py
 echo.
-echo Installing packages...
-pip install --user psutil prettytable six watchgod tailer urllib3 flask flask_httpauth flask-socketio discord.py
-
+call :info_msg Running pip install...
+pip install --user psutil prettytable six watchgod tailer urllib3 flask flask_httpauth flask-socketio discord.py 2>nul
 if %ERRORLEVEL% EQU 0 (
-    echo.
-    echo [SUCCESS] Python dependencies installed successfully!
+    call :complete_progress Python packages installed successfully!
 ) else (
-    echo.
-    echo [ERROR] Failed to install some packages. Check the output above.
+    call :status_error Some packages failed to install
 )
-
+echo.
+echo    =================================================
 echo.
 set /p CONTINUE=Press Enter to return to menu...
 goto :menu
 
+REM ========================
+REM Check System Dependencies
+REM ========================
 :install_sysdeps
 cls
-echo ================================================
-echo Checking System Dependencies
-echo ================================================
+echo.
+echo    =================================================
+echo    System Dependencies Check
+echo    =================================================
 echo.
 
-REM Check for Python
 where python >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo [OK] Python is installed
+    call :status_ok Python is installed
     python --version
 ) else (
-    echo [ERROR] Python not found. Please install Python 3.8+ from python.org
+    call :status_error Python not found - install from python.org
 )
 
 echo.
 
-REM Check for curl
 where curl >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo [OK] curl is installed
+    call :status_ok curl is installed
 ) else (
-    echo [WARNING] curl not found. Some features may not work.
+    call :status_warn curl not found
 )
 
-REM Check for git
 where git >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo [OK] git is installed
+    call :status_ok git is installed
 ) else (
-    echo [WARNING] git not found. Some features may not work.
+    call :status_warn git not found
+)
+
+where dotnet >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    call :status_ok dotnet is installed
+) else (
+    call :status_warn dotnet not found
 )
 
 echo.
-echo If any dependencies are missing, you can install them via winget:
-echo   winget install cURL
-echo   winget install Git.Git
+call :info_msg You can install missing tools via winget:
+echo    winget install Python.Python.3.12
+echo    winget install cURL.cURL
+echo    winget install Git.Git
 echo.
 set /p CONTINUE=Press Enter to return to menu...
 goto :menu
 
+REM ========================
+REM Setup Directory Structure
+REM ========================
 :setup_structure
 cls
-echo ================================================
-echo Setting up MBIIEZ Directory Structure
-echo ================================================
+echo.
+echo    =================================================
+echo    Setting Up Directory Structure
+echo    =================================================
 echo.
 
 set /p USER_OPENJKPATH=Enter OpenJK path (default: %OPENJKPATH%): 
@@ -151,232 +201,257 @@ set /p USER_MBIIDIR=Enter MBIIDir path (default: %MBIIDIR%):
 if not '%USER_MBIIDIR%'=='' set MBIIDIR=%USER_MBIIDIR%
 
 echo.
-echo Creating directories...
 
-REM Create MBIIDir if it doesn't exist
+call :info_msg Creating directories...
 if not exist %MBIIDIR% (
-    mkdir %MBIIDIR%
-    echo [OK] Created %MBIIDIR%
+    mkdir %MBIIDIR% >nul 2>&1
+    call :status_ok Created %MBIIDIR%
 ) else (
-    echo [OK] %MBIIDIR% already exists
+    call :status_ok %MBIIDIR% already exists
 )
 
-REM Create configs directory
 if not exist %MBIIDIR%\naked (
-    mkdir %MBIIDIR%\naked
-    echo [OK] Created %MBIIDIR%\naked
+    mkdir %MBIIDIR%\naked >nul 2>&1
+    call :status_ok Created %MBIIDIR%\naked
 )
 
 echo.
-echo [SUCCESS] Directory structure created!
+call :complete_progress Directory structure ready!
 echo.
 set /p CONTINUE=Press Enter to return to menu...
 goto :menu
 
+REM ========================
+REM Setup RTVRTM
+REM ========================
 :setup_rtvrtm
 cls
-echo ================================================
-echo Setting up RTV/RTM
-echo ================================================
+echo.
+echo    =================================================
+echo    Setting up RTVRTM
+echo    =================================================
 echo.
 
 set /p USER_OPENJKPATH=Enter OpenJK path (default: %OPENJKPATH%): 
 if not '%USER_OPENJKPATH%'=='' set OPENJKPATH=%USER_OPENJKPATH%
 
 if exist %SCRIPTPATH%\rtvrtm.py (
-    copy /Y %SCRIPTPATH%\rtvrtm.py %OPENJKPATH% >nul
-    echo [OK] Copied rtvrtm.py to %OPENJKPATH%
+    copy /Y %SCRIPTPATH%\rtvrtm.py %OPENJKPATH% >nul 2>&1
+    call :status_ok Copied rtvrtm.py to OpenJK directory
 ) else (
-    echo [WARNING] rtvrtm.py not found in script directory
+    call :status_error rtvrtm.py not found in script directory
 )
 
 echo.
-echo RTV/RTM setup complete. The plugin will use the config path:
-echo   %OPENJKPATH%\naked\rtvrtm.json
+call :complete_progress RTVRTM setup complete!
 echo.
 set /p CONTINUE=Press Enter to return to menu...
 goto :menu
 
+REM ========================
+REM Create Launcher
+REM ========================
 :create_launcher
 cls
-echo ================================================
-echo Creating MBII Launcher Script
-echo ================================================
+echo.
+echo    =================================================
+echo    Creating MBII Launcher
+echo    =================================================
 echo.
 
 set LAUNCHERPATH=%SCRIPTPATH%\nakedii.bat
 
-REM Create the launcher batch file
 (
     echo @echo off
     echo REM MBIIEZ Launcher - Auto-generated by install.bat
-    echo.
     echo setlocal
-    echo.
-    echo REM Change to script directory
     echo cd /d %%~dp0
-    echo.
-    echo REM Set MBIIDir (customizable)
-    echo set MBIIDIR=%%USERPROFILE%%^\.mbiiez
-    echo.
-    echo REM Run the Python script with any arguments passed through
+    echo set MBIIDIR=%%USERPROFILE%%^.mbiiez
     echo python %%~dp0nakedii.py %%*
-    echo.
     echo endlocal
 ) > %LAUNCHERPATH%
 
 if exist %LAUNCHERPATH% (
-    echo [SUCCESS] Created %LAUNCHERPATH%
+    call :status_ok Created %LAUNCHERPATH%
     echo.
-    echo You can now run mbiiez using:
-    echo   %LAUNCHERPATH%
-    echo.
-    echo Or add the script directory to your PATH for easier access.
+    echo    Launcher ready! Run nakedii.bat to start MBIIEZ
 ) else (
-    echo [ERROR] Failed to create launcher script.
+    call :status_error Failed to create launcher
 )
 
 echo.
 set /p CONTINUE=Press Enter to return to menu...
 goto :menu
 
+REM ========================
+REM Install MBII Updater
+REM ========================
 :install_updater
 cls
-echo ================================================
-echo Installing MBII Updater
-echo ================================================
+echo.
+echo    =================================================
+echo    Installing MBII Updater
+echo    =================================================
 echo.
 
 set /p USER_OPENJKPATH=Enter OpenJK path (default: %OPENJKPATH%): 
 if not '%USER_OPENJKPATH%'=='' set OPENJKPATH=%USER_OPENJKPATH%
 
-echo.
-echo This will download and install the MBII CLI Updater from moviebattles.org
-echo.
-set /p CONFIRM=Continue? (Y/N): 
-if /i not '%CONFIRM%'=='Y' goto :menu
+if not exist %SCRIPTPATH%\naked mkdir %SCRIPTPATH%\naked
 
-if exist %SCRIPTPATH%\naked (
-    echo Creating update directory...
-    if not exist %SCRIPTPATH%\naked mkdir %SCRIPTPATH%\naked
-)
-
-REM Download the updater (requires curl)
-echo.
-echo Downloading MBII CLI Updater...
+call :info_msg Downloading MBII CLI Updater...
 curl -L -o "%SCRIPTPATH%\naked\MBII_CLI_Updater.zip" https://www.moviebattles.org/download/MBII_CLI_Updater.zip 2>nul
 
 if %ERRORLEVEL% EQU 0 (
-    echo [OK] Downloaded updater
+    call :complete_progress Downloaded MBII CLI Updater
     echo.
-    echo Note: You may need to manually extract the zip file if it downloaded.
-    echo       The .exe, .dll, and .json files should go to your OpenJK directory.
+    call :info_msg Extract the zip and copy files to %OPENJKPATH%
 ) else (
-    echo [WARNING] Download failed. You may need to manually download from:
-    echo   https://www.moviebattles.org/download/MBII_CLI_Updater.zip
+    call :status_error Download failed - manually download from moviebattles.org
 )
 
 echo.
 set /p CONTINUE=Press Enter to return to menu...
 goto :menu
 
+REM ========================
+REM Update MBII
+REM ========================
 :update_mbii
 cls
-echo ================================================
-echo Updating MBII
-echo ================================================
+echo.
+echo    =================================================
+echo    Updating MBII
+echo    =================================================
 echo.
 
 set /p USER_OPENJKPATH=Enter OpenJK path (default: %OPENJKPATH%): 
 if not '%USER_OPENJKPATH%'=='' set OPENJKPATH=%USER_OPENJKPATH%
 
+where dotnet >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    call :status_error dotnet not found - please install .NET SDK first
+    goto :update_mbii_done
+)
+
+call :info_msg Running MBII Command Line Updater...
+cd /d %OPENJKPATH%
+dotnet MBII_CommandLine_Update_XPlatform.dll 2>nul
+
+if %ERRORLEVEL% EQU 0 (
+    call :complete_progress MBII updated successfully!
+) else (
+    call :status_error MBII update failed
+)
+
+:update_mbii_done
 echo.
-echo This step requires .NET SDK to be installed.
-echo On Windows, .NET Framework is usually pre-installed.
+set /p CONTINUE=Press Enter to return to menu...
+goto :menu
+
+REM ========================
+REM Show Installation Status
+REM ========================
+:show_status
+cls
 echo.
-echo Checking for dotnet...
+echo    =================================================
+echo    Installation Status
+echo    =================================================
+echo.
+
+echo    Path Information:
+echo      Script: %SCRIPTPATH%
+echo      OpenJK: %OPENJKPATH%
+echo      MBIIDir: %MBIIDIR%
+echo.
+
+echo    Installed Components:
+
+where python >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    call :status_ok Python installed
+    python --version 2>&1 | findstr /N /C:Python
+) else (
+    call :status_warn Python - not found
+)
+
+pip show psutil >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    call :status_ok Python packages installed
+) else (
+    call :status_warn Python packages - not installed
+)
+
+if exist %OPENJKPATH%\rtvrtm.py (
+    call :status_ok RTVRTM installed
+) else (
+    call :status_warn RTVRTM - not installed
+)
+
+if exist %SCRIPTPATH%\nakedii.bat (
+    call :status_ok Launcher created
+) else (
+    call :status_warn Launcher - not created
+)
+
 where dotnet >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo [OK] dotnet is installed
-    dotnet --version
-    echo.
-    set /p CONFIRM=Run MBII Updater? (Y/N): 
-    if /i '%CONFIRM%'=='Y' (
-        echo.
-        echo Running MBII Updater...
-        cd /d %OPENJKPATH%
-        dotnet MBII_CommandLine_Update_XPlatform.dll
-    )
+    call :status_ok .NET SDK installed
 ) else (
-    echo [WARNING] dotnet not found. Please install from:
-    echo   https://dotnet.microsoft.com/download
+    call :status_warn .NET SDK - not installed
 )
 
 echo.
 set /p CONTINUE=Press Enter to return to menu...
 goto :menu
 
-:full_install
+REM ========================
+REM Quick Install
+REM ========================
+:quick_install
 cls
-echo ================================================
-echo Running Full Installation
-echo ================================================
+echo.
+echo    =================================================
+echo    Running Quick Install
+echo    =================================================
 echo.
 
-echo Step 1: Installing Python dependencies...
+call :info_msg Running: Python -^> Structure -^> RTVRTM -^> Launcher
+echo.
+set /p CONFIRM=Press Enter to continue or Ctrl+C to cancel...
+
 call :install_python
 echo.
-
-echo Step 2: Checking system dependencies...
 call :install_sysdeps
 echo.
-
-echo Step 3: Setting up directory structure...
 call :setup_structure
 echo.
-
-echo Step 4: Setting up RTVRTM...
 call :setup_rtvrtm
 echo.
-
-echo Step 5: Creating launcher...
 call :create_launcher
-echo.
 
-echo ================================================
-echo Full installation complete!
-echo ================================================
-echo.
-echo Next steps:
-echo   1. Copy your game server files to: %OPENJKPATH%
-echo   2. Edit configs in: %MBIIDIR%\naked
-echo   3. Run: %SCRIPTPATH%\nakedii.bat
-echo.
-set /p CONTINUE=Press Enter to return to menu...
-goto :menu
-
-:show_config
 cls
-echo ================================================
-echo Current Configuration
-echo ================================================
 echo.
-echo Script Directory: %SCRIPTPATH%
-echo OpenJK Path: %OPENJKPATH%
-REM MBIIPATH not used on Windows
-echo MBIIDir: %MBIIDIR%
+echo    =================================================
+echo    Quick Install Complete
+echo    =================================================
 echo.
-echo Python Version:
-python --version
+call :complete_progress All core components installed!
 echo.
-echo Installed packages:
-pip list 2>nul | findstr /I /C:psutil /C:prettytable /C:six /C:watchgod /C:tailer /C:urllib3 /C:flask /C:discord
+call :info_msg Next steps:
+echo    1. Copy game server files to: %OPENJKPATH%
+echo    2. Edit configs in: %MBIIDIR%\naked
+echo    3. Run: %SCRIPTPATH%\nakedii.bat
 echo.
 set /p CONTINUE=Press Enter to return to menu...
 goto :menu
 
+REM ========================
+REM Exit
+REM ========================
 :exit_menu
 echo.
-echo Thank you for using MBIIEZ Installer!
+echo    Thank you for using MBIIEZ Installer!
 echo.
 exit /b 0
