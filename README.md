@@ -1,10 +1,9 @@
 # Movie Battles II EZ (MBIIEZ)
 
-MBIIEZ is a Python 3 wrapper for running and managing instances of Movie Battles II game servers. It provides both a CLI (Command Line Interface) and a Web GUI for managing game server instances.
+MBIIEZ is a Python 3 wrapper for running and managing instances of Movie Battles II game servers. It provides a CLI (Command Line Interface) for managing game server instances.
 
 ## Features
 
-- **Simple Web GUI** - Manage servers through an intuitive web interface
 - **CLI Management** - Full command-line control for automation and scripting
 - **Multi-Instance Support** - Run multiple game server instances simultaneously on different ports
 - **Plugin System** - Extend functionality with custom Python plugins
@@ -344,16 +343,6 @@ mbii -i myinstance rcon g_gametype 0
 mbii -i myinstance cvar g_gametype
 mbii -i myinstance cvar g_gametype 2
 ```
-
-### Web Interface
-
-```bash
-mbii web
-```
-
-Access `http://your-server-ip:5000` in your browser.
-
----
 
 ## Plugin Development
 
