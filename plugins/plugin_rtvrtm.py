@@ -316,6 +316,9 @@ class plugin:
         self.instance.say('^2[RTV] ^7Type !number to vote. Voting will complete in ^21 ^7round (0/' + str(total_players) + ').')
         self.instance.say('^2[Votes] ^7' + votes_display)
         
+        # Show map counts for debugging
+        self.instance.say('^2[RTV] ^7Maps loaded: ^1' + str(len(all_maps)) + ' ^7(primary: ^1' + str(len(self.maps)) + '^7, secondary: ^1' + str(len(self.secondary_maps or [])) + '^7)')
+        
         self.voting_start_time = time.time()
         self.players_voted = {}
         self.last_voting_broadcast = 0
