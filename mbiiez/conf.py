@@ -203,34 +203,10 @@ class conf:
             f.write(data)
             f.close()
 
-    # Generate an RTV RTM Config from JSON config
     # generate_rtvrtm_config and generate_rtvrtm_map_lists are disabled
     # The plugin_rtvrtm.py plugin reads maps directly from JSON config
     # def generate_rtvrtm_config(self):
-    #     if(self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv') or self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtm')):
-    #         with open("{}/rtvrtm.template".format(self.config_path), 'r') as file:
-    #             data = file.read()
-    #             data = data.replace("[log_path]", self.config['server']['log_path'])
-    #             data = data.replace("[rcon_password]",self.config['security']['rcon_password'])          
-    #             data = data.replace("[primary_maps_path]",  self.config['server']['primary_maplist_path'])    
-    #             data = data.replace("[secondary_maps_path]", self.config['server']['secondary_maplist_path'])            
-    #             data = data.replace("[mbii_path]", self.mbii_path)           
-    #             data = data.replace("[port]",str(self.config['server']['port']))
-    #             if(self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv')):
-    #                 data = data.replace("[rtv_mode]", "1")
-    #             else:
-    #                 data = data.replace("[rtv_mode]","0")  
-    #         f.write(data)
-    #         f.write(data)
-    #         f.close()
-    #         time.sleep(0.3)
-       
+    #     pass
     # def generate_rtvrtm_map_lists(self):
-    #     if(self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv')):
-    #         f = open(self.config['server']['primary_maplist_path'], "w")
-    #         f.write("\n".join(self.config['primary_maps']))
-    #         f.close()             
-    #         f = open(self.config['server']['secondary_maplist_path'], "w")
-    #         f.write("\n".join(self.config['secondary_maps']))
-    #         f.close()           
+    #     pass           
       
