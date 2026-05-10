@@ -106,6 +106,17 @@ class plugin:
             self.instance.log_handler.log('[RTV/RTM] RTV is enabled - primary_maps: ' + str(len(self.maps)) + ', secondary_maps: ' + str(len(self.secondary_maps)))
         if self.rtm_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTM is enabled')
+        
+        # Schedule map status broadcast after server is ready (avoid connection refused)
+        import threading
+        threading.Timer(10.0, self._broadcast_map_status).start()
+    
+    def _broadcast_map_status(self):
+        """Broadcast map loading status in-game after server is ready"""
+        try:
+            self.instance.say('^2[RTV/RTM] ^7Maps loaded: ^1' + str(len(self.maps)) + '^7 primary, ^1' + str(len(self.secondary_maps or [])) + '^7 secondary')
+        except Exception as e:
+            self.instance.log_handler.log('[RTV/RTM] Failed to broadcast map status: ' + str(e))
             
     def on_new_log_line(self, args):
         """Handle new log lines - for parsing RTV triggers from game log"""
