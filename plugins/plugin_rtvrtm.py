@@ -570,12 +570,18 @@ class plugin:
             return
             
         if player_id not in self.rtm_votes:
-            self.instance.say('^2[RTM] ^7%s ^7didn\'t want to rock the mode yet (%i/%i).' %
+            rtm_required = int(len(self.players) * self.rtm_rate / 100)
+            if rtm_required < 1:
+                rtm_required = 1
+            self.instance.say('^2[RTM] ^7%s ^7didn\'t want to rock the mode yet (^2%i^7/^2%i^7).' %
                 (player_name, len(self.rtm_votes), rtm_required))
             return
             
         del self.rtm_votes[player_id]
-        self.instance.say('^2[RTM] ^7%s ^7no longer wants to rock the mode (%i/%i).' %
+        rtm_required = int(len(self.players) * self.rtm_rate / 100)
+        if rtm_required < 1:
+            rtm_required = 1
+        self.instance.say('^2[RTM] ^7%s ^7no longer wants to rock the mode (^2%i^7/^2%i^7).' %
             (player_name, len(self.rtm_votes), rtm_required))
 
     def handle_maplist(self, player_id, page):
