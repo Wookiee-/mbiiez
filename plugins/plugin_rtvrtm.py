@@ -150,6 +150,11 @@ class plugin:
             self.show_vote_status(player_id)
             return
             
+        # Maps command - show all available maps directly from config
+        if message.startswith('!maps'):
+            self.handle_show_maps(player_id)
+            return
+
         # Maplist command
         if message.startswith('!maplist'):
             parts = message.split(' ', 1)[1:] if len(message.split(' ', 1)) > 1 else []
@@ -576,6 +581,29 @@ class plugin:
             rtm_required = 1
         self.instance.say('^2[RTM] ^7%s ^7no longer wants to rock the mode (^2%i^7/^2%i^7).' %
             (player_name, len(self.rtm_votes), rtm_required))
+
+    def handle_show_maps(self, player_id):
+        """Show all maps directly from config for selection"""
+        # Read maps directly from config
+        all_maps = list(self.instance.config.get('primary_maps', []))
+        secondary = self.instance.config.get('secondary_maps', [])
+        if secondary:
+            all_maps.extend(list(secondary))
+        
+        if not all_maps:
+            self.instance.say('^2[Maps] ^7No maps configured.')
+            return
+        
+        all_maps.sort(key=lambda x: x.lower())
+        
+        # Display maps in chunks of 10
+        chunks = [all_maps[i:i+10] for i in range(0, len(all_maps), 10)]
+        total = len(all_maps)
+        
+        for idx, chunk in enumerate(chunks, 1):
+            self.instance.say('^2[Maps ^7%i/%i^2] ^7%s' % (idx, len(chunks), ', '.join(chunk)))
+        
+        self.instance.say('^2[Maps] ^7Total: ^1%i ^7maps available for nomination' % total)
 
     def handle_maplist(self, player_id, page):
         """Show map list with pagination"""
