@@ -28,12 +28,18 @@ class plugin_handler:
         
         sys.path.insert(0, settings.locations.plugins_path)
 
+        # Debug: show plugins being looked for
+        self.instance.log_handler.log("[PLUGIN_HANDLER] Looking for plugins: " + str(plugins))
+
         self.discovered_plugins = {
             name: importlib.import_module(name)
             for finder, name, ispkg
             in pkgutil.iter_modules()
             if name in plugins
         }
+        
+        # Debug: show what was discovered
+        self.instance.log_handler.log("[PLUGIN_HANDLER] Discovered plugins: " + str(list(self.discovered_plugins.keys())))
 
         for p in self.discovered_plugins:
             plugin = self.discovered_plugins[p].plugin(self.instance)
