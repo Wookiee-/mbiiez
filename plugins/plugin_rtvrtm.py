@@ -304,13 +304,17 @@ class plugin:
         # If no nominations, get random maps from available
         if not nominated_maps:
             available = [m for m in all_maps if m not in self.recently_played] or all_maps
+            self.instance.say('^2[RTV] ^7Available: ^1' + str(len(available)) + '^7, Recently played: ^1' + str(len(self.recently_played)))
             map_choices = random.sample(available, min(5, len(available)))
         else:
             # Count nominations and get top maps
             from collections import Counter
             counts = Counter(nominated_maps)
+            self.instance.say('^2[RTV] ^7Nominations: ^1' + str(len(nominated_maps)))
             # Get maps sorted by nomination count (highest first), then priority
             map_choices = [m for m, c in counts.most_common(5)]
+        
+        self.instance.say('^2[RTV] ^7Map choices: ^1' + str(len(map_choices)))
         
         # Create voting options from map choices (like original rtvrtm.py)
         self.voting_options = {}
