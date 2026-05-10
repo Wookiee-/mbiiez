@@ -5,10 +5,7 @@
     "discord":"[DISCORD INVITE CODE]",
     "engine": "mbiided.i386",	
     "game":	"MBII",
-    "restart_instance_every_hours":24,
-    "enable_rtv":true,
-    "enable_rtm":false,
-    "rtm_mode": 0
+    "restart_instance_every_hours":24
   },
   "plugins":{
         "auto_message":{
@@ -20,7 +17,14 @@
                 "repeat_minutes":5
         },
         "stats":{},
-        "rtvrtm":{},
+    "rtvrtm":{
+        "enable_rtv":true,
+        "enable_rtm":false,
+        "rtv_rate":50,
+        "rtv_min_votes":10,
+        "rtm_rate":50,
+        "rtm_min_votes":20
+    },
         "vpn_monitor":{
             "enabled":true,
             "iphub_api_key":"YOUR_IPHUB_API_KEY",

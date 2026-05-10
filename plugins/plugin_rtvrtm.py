@@ -26,9 +26,9 @@ class plugin:
     def __init__(self, instance):
         self.instance = instance
         
-        # RTV state from server config
-        self.rtv_enabled = instance.config.get('server', {}).get('enable_rtv', False)
-        self.rtm_enabled = instance.config.get('server', {}).get('enable_rtm', False)
+        # RTV state from plugins config
+        self.rtv_enabled = instance.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv', False)
+        self.rtm_enabled = instance.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtm', False)
         
         # Voting state
         self.rtv_votes = {}
@@ -38,11 +38,11 @@ class plugin:
         self.last_vote_time = 0
         self.vote_cooldown = 300  # 5 minutes
         
-        # Configuration - use server config with fallbacks
-        self.rtv_rate = instance.config.get('server', {}).get('rtv_rate', 50)
-        self.rtv_min_votes = instance.config.get('server', {}).get('rtv_min_votes', 10)
-        self.rtm_rate = instance.config.get('server', {}).get('rtm_rate', 0)
-        self.rtm_min_votes = instance.config.get('server', {}).get('rtm_min_votes', 20)
+        # Configuration - use plugins.rtvrtm config with fallbacks
+        self.rtv_rate = instance.config.get('plugins', {}).get('rtvrtm', {}).get('rtv_rate', 50)
+        self.rtv_min_votes = instance.config.get('plugins', {}).get('rtvrtm', {}).get('rtv_min_votes', 10)
+        self.rtm_rate = instance.config.get('plugins', {}).get('rtvrtm', {}).get('rtm_rate', 50)
+        self.rtm_min_votes = instance.config.get('plugins', {}).get('rtvrtm', {}).get('rtm_min_votes', 20)
         
         # Player tracking
         self.players = {}
@@ -76,7 +76,7 @@ class plugin:
         if self.rtv_enabled:
             self.instance.log_handler.log('[RTV/RTM] RTV is enabled')
         if self.rtm_enabled:
-            self.instance.log_handler.log('[RTV/RTM] RTM is enabled (mode: ' + str(self.instance.config.get('server', {}).get('rtm_mode', 0)) + ')')
+            self.instance.log_handler.log('[RTV/RTM] RTM is enabled')
             
     def on_new_log_line(self, args):
         """Handle new log lines - for parsing RTV triggers from game log"""

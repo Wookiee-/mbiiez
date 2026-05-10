@@ -5,10 +5,7 @@
     "discord":"[DISCORD INVITE CODE]",
     "engine": "mbiided.i386",	
     "game":	"MBII",
-    "restart_instance_every_hours":24,
-    "enable_rtv":true,
-    "enable_rtm":false,
-    "rtm_mode": 0
+    "restart_instance_every_hours":24
   },
   "plugins":{
         "auto_message":{
@@ -22,7 +19,15 @@
         "auto_map_rotation":{
                 "rotate_minutes": 30
         },
-        "stats":{}
+        "stats":{},
+        "rtvrtm":{
+            "enable_rtv":true,
+            "enable_rtm":false,
+            "rtv_rate":50,
+            "rtv_min_votes":10,
+            "rtm_rate":50,
+            "rtm_min_votes":20
+        }
   },
   "security":{
     "rcon_password":"[CHOOSE AN RCON PASSWORD]",

@@ -170,9 +170,7 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
     "port": 29070,
     "engine": "mbiided.i386",
     "game": "MBII",
-    "restart_instance_every_hours": 24,
-    "enable_rtv": true,
-    "enable_rtm": false
+    "restart_instance_every_hours": 24
   },
   "plugins": {
     "auto_message": {
@@ -180,7 +178,10 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
       "repeat_minutes": 5
     },
     "stats": {},
-    "rtvrtm": {}
+    "rtvrtm": {
+      "enable_rtv": true,
+      "enable_rtm": false
+    }
   },
   "security": {
     "rcon_password": "your_secure_password"
@@ -197,9 +198,7 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
     "port": 29070,
     "engine": "mbiided.i386",
     "game": "MBII",
-    "restart_instance_every_hours": 24,
-    "enable_rtv": true,
-    "enable_rtm": false
+    "restart_instance_every_hours": 24
   },
   "plugins": {
     "auto_message": {
@@ -207,7 +206,10 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
       "repeat_minutes": 5
     },
     "stats": {},
-    "rtvrtm": {},
+    "rtvrtm": {
+      "enable_rtv": true,
+      "enable_rtm": false
+    },
     "vpn_monitor": {
       "enabled": true,
       "iphub_api_key": "YOUR_IPHUB_API_KEY",
@@ -231,9 +233,8 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
 | `engine` | string | Path to game engine | `mbiided.i386` |
 | `game` | string | Game mod folder | `MBII` |
 | `restart_instance_every_hours` | integer | Auto-restart interval (0=disabled) | `24` |
-| `enable_rtv` | boolean | Enable rock-the-vote | `true` |
-| `enable_rtm` | boolean | Enable requested-to-vote | `false` |
-| `rtm_mode` | integer | RTM mode (0=random, 1=weighted) | `0` |
+| `enable_rtv` | boolean | Enable rock-the-vote (in plugins.rtvrtm) | `true` |
+| `enable_rtm` | boolean | Enable requested-to-vote (in plugins.rtvrtm) | `false` |
 
 #### Security Section
 
@@ -254,9 +255,25 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
 #### RTV/RTM Plugin
 ```json
 "plugins": {
-  "rtvrtm": {}
+  "rtvrtm": {
+    "enable_rtv": true,
+    "enable_rtm": false,
+    "rtv_rate": 50,
+    "rtv_min_votes": 10,
+    "rtm_rate": 50,
+    "rtm_min_votes": 20
+  }
 }
 ```
+
+| RTV/RTM Setting | Description | Default |
+|-----------------|-------------|---------|
+| `enable_rtv` | Enable rock-the-vote functionality | `true` |
+| `enable_rtm` | Enable requested-to-vote functionality | `false` |
+| `rtv_rate` | Percentage of players needed to trigger RTV | `50` |
+| `rtv_min_votes` | Minimum votes required for RTV | `10` |
+| `rtm_rate` | Percentage of players needed to trigger RTM | `50` |
+| `rtm_min_votes` | Minimum votes required for RTM | `20` |
 
 #### Auto Message Plugin
 ```json

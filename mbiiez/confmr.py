@@ -206,8 +206,7 @@ class conf:
 
     # Generate an RTV RTM Config from JSON config
     def generate_rtvrtm_config(self):
-    
-        if(self.config['server']['enable_rtv'] or self.config['server']['enable_rtm']):
+        if(self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv') or self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtm')):
     
             with open("{}/rtvrtm.template".format(self.config_path), 'r') as file:
             
@@ -217,18 +216,12 @@ class conf:
                 data = data.replace("[primary_maps_path]",  self.config['server']['primary_maplist_path'])    
                 data = data.replace("[secondary_maps_path]", self.config['server']['secondary_maplist_path'])            
                 data = data.replace("[mbii_path]", self.mbii_path)           
-                data = data.replace("[port]",str(self.config['server']['port']))  
-
-                if(self.config['server']['enable_rtv']):
-                    data = data.replace("[rtv_mode]","1")  
+                data = data.replace("[port]",str(self.config['server']['port']))
+                if(self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv')):
+                    data = data.replace("[rtv_mode]", "1")
                 else:
                     data = data.replace("[rtv_mode]","0")  
  
-                if(self.config['server']['enable_rtm']):
-                    data = data.replace("[rtm_mode]",str(self.config['server']['rtm_mode'])) 
-                else:
-                    data = data.replace("[rtm_mode]","0")                     
-                    
             f = open(self.config['server']['rtvrtm_config_path'], "w")
             f.write(data)
             f.close()
@@ -236,8 +229,7 @@ class conf:
        
     # Generate RTV RTM Maps List from JSON config
     def generate_rtvrtm_map_lists(self):
-    
-        if(self.config['server']['enable_rtv']):
+        if(self.config.get('plugins', {}).get('rtvrtm', {}).get('enable_rtv')):
             f = open(self.config['server']['primary_maplist_path'], "w")
             f.write("\n".join(self.config['primary_maps']))
             f.close()             
