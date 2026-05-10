@@ -157,7 +157,7 @@ class plugin:
         
         # Unvote command (during active voting)
         if message == '!unvote':
-            self.handle_unvote(player_id)
+            self.handle_unvote(player_id, player_name)
             return
         
         # Vote with digit (during active voting)
@@ -587,7 +587,7 @@ class plugin:
         # Check if voting should end (all players voted or time expired)
         self.check_voting_end()
     
-    def handle_unvote(self, player_id):
+    def handle_unvote(self, player_id, player_name):
         """Handle unvote - remove vote during active voting"""
         if not self.voting_active:
             self.instance.tell(player_id, '^2[Voting] ^7No voting is currently in progress.')
