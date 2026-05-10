@@ -318,7 +318,7 @@ class plugin:
         self.voting_options[len(map_choices) + 1] = {'count': 0, 'priority': 0, 'value': None, 'display': "Don't change"}
         
         # Build votes_display string
-        votes_display = ', '.join('^2%i^7(%i): %s' % (i, 0, m) for i, m in enumerate(map_choices, 1))
+        votes_display = ', '.join('^2%i^7(%i): ^2%s' % (i, 0, m) for i, m in enumerate(map_choices, 1))
         votes_display += ', ^2%i^7(0): Don\'t change' % (len(map_choices) + 1)
         
         # Broadcast voting messages
@@ -670,7 +670,7 @@ class plugin:
         total_players = len(self.players)
         voted_count = len(self.players_voted)
         voting_name = self.current_voting_type.upper()
-        votes_display = ', '.join('^2%i^7(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
+        votes_display = ', '.join('^2%i^7(%i): ^2%s' % (opt_num, opt_data['count'], opt_data['display']) 
                                   for opt_num, opt_data in sorted(self.voting_options.items()))
         # Send voting countdown message
         if voted_count < total_players:
@@ -717,7 +717,7 @@ class plugin:
             if voting_time - self.last_voting_broadcast >= 30:
                 self.last_voting_broadcast = voting_time
                 voting_name = self.current_voting_type.upper()
-                votes_display = ', '.join('^2%i^7(%i): %s' % (opt_num, opt_data['count'], opt_data['display']) 
+                votes_display = ', '.join('^2%i^7(%i): ^2%s' % (opt_num, opt_data['count'], opt_data['display']) 
                                           for opt_num, opt_data in sorted(self.voting_options.items()))
                 self.instance.say('^2[%s] ^7Type !number to vote. Voting will complete in ^21 ^7round (%i/%i).' % 
                                           (voting_name, voted_count, total_players))
