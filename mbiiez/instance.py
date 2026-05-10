@@ -368,8 +368,10 @@ class instance:
 
         # Generate our configs
         self.conf.generate_server_config()
-        self.conf.generate_rtvrtm_config()
-        self.conf.generate_rtvrtm_map_lists()
+        # generate_rtvrtm_config and generate_rtvrtm_map_lists are disabled
+        # Plugin reads maps directly from JSON config
+        # self.conf.generate_rtvrtm_config()
+        # self.conf.generate_rtvrtm_map_lists()
         
         if self.server_running():
              print(bcolors.OK + "Instance is already running" + bcolors.ENDC)
