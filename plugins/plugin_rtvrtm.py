@@ -266,8 +266,10 @@ class plugin:
         # Add vote
         self.rtv_votes[player_id] = {'name': player_name}
         
-        # Calculate required votes
-        required = max(int(total_players * self.rtv_rate / 100), self.rtv_min_votes)
+        # Calculate required votes - use 1 as minimum like original rtvrtm.py
+        required = int(total_players * self.rtv_rate / 100)
+        if required < 1:
+            required = 1
         current = len(self.rtv_votes)
         
         # Broadcast who wants to rock the vote (like original rtvrtm.py)
