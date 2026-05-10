@@ -261,7 +261,9 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
     "rtv_rate": 50,
     "rtv_min_votes": 10,
     "rtm_rate": 50,
-    "rtm_min_votes": 20
+    "rtm_min_votes": 20,
+    "rtv_queued": true,
+    "rtm_queued": true
   }
 }
 ```
@@ -274,6 +276,15 @@ Create a JSON config file in the `configs/` directory. Use `configs/default.json
 | `rtv_min_votes` | Minimum votes required for RTV | `10` |
 | `rtm_rate` | Percentage of players needed to trigger RTM | `50` |
 | `rtm_min_votes` | Minimum votes required for RTM | `20` |
+| `rtv_queued` | RTV changes at round end (true) or immediately (false) | `true` |
+| `rtm_queued` | RTM changes at round end (true) or immediately (false) | `true` |
+
+**How RTV/RTM Works:**
+- Players vote `!rtv` or `!rtm` to initiate
+- When threshold is reached, a Yes/No vote starts (`!1` = Yes, `!2` = No)
+- If Yes wins and `rtv_queued`/`rtm_queued` is `true`: change happens at next map change (round end)
+- If Yes wins and `rtv_queued`/`rtm_queued` is `false`: change happens immediately
+- RTV changes to the most nominated map; RTM changes to the most requested mode
 
 #### Auto Message Plugin
 ```json
