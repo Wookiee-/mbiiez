@@ -39,6 +39,10 @@ class console:
     # Send SAY as Server
     def say(self, message):
         self.rcon("svsay {}".format(message))
+
+    # Send to game console (without Server: prefix)
+    def csay(self, message):
+        self.rcon("say {}".format(message))
        
     # Send TELL as server (To Player)   
     def tell(self, player_id, message):
