@@ -24,30 +24,6 @@ install_python_tools() {
     # Note: psutil is required for Windows compatibility support
 }
 
-setup_pyenv() {
-    sudo apt-get update
-    sudo apt install -y build-essential libssl-dev zlib1g-dev libbz2-dev \
-        libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils tk-dev \
-        libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
-
-    if [ ! -r ~/.pyenv/ ]; then
-        git clone https://github.com/pyenv/pyenv.git ~/.pyenv
-        git clone https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
-        echo '
-# pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-if command -v pyenv 1>/dev/null 2>&1; then
-    eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)" # Enable auto-activation of virtualenvs
-fi' >> ~/.bashrc
-        source ~/.bashrc
-        exec "$SHELL"
-    fi
-    pyenv install 2.7.18 -s -v
-    pyenv global 2.7.18
-}
-
 setup_rtvrtm() {
     cp rtvrtm.py $OPENJKPATH/
     chmod +x $OPENJKPATH/rtvrtm.py
@@ -116,7 +92,6 @@ while true; do
     PS3=$'\nEnter your choice (1-9) or 10 to quit: '
     options=(
         "Install Dependencies"
-        "Setup Pyenv"
         "Install Python Tools"
         "Setup RTVRTM"
         "Setup Links"
@@ -130,14 +105,13 @@ while true; do
     select opt in "${options[@]}"; do
         case $REPLY in
             1) install_dependencies; break ;;
-            2) setup_pyenv; break ;;
-            3) install_python_tools; break ;;
-            4) setup_rtvrtm; break ;;
-            5) setup_links; break ;;
-            6) install_dotnet; break ;;
-            7) install_mbii_updater; break ;;
-            8) update_mbii; break ;;
-            9)
+            2) install_python_tools; break ;;
+            3) setup_rtvrtm; break ;;
+            4) setup_links; break ;;
+            5) install_dotnet; break ;;
+            6) install_mbii_updater; break ;;
+            7) update_mbii; break ;;
+            8)
                 echo "Current paths:"
                 echo "Script path: $SCRIPTPATH"
                 echo "OpenJK path: $OPENJKPATH"
